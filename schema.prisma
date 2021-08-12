@@ -25,11 +25,11 @@ model Course {
 }
 
 model Location {
-  id      Int      @id @default(autoincrement())
-  name    String
-  lat     Float
-  lon     Float
-  courses Course[]
+  id     Int     @id @default(autoincrement())
+  name   String
+  lat    Float
+  lon    Float
+  course Course?
 }
 
 model Layout {
@@ -54,7 +54,7 @@ model Hole {
 model ScoreCard {
   id       Int      @id @default(autoincrement())
   date     DateTime @default(now())
-  layouts  Layout   @relation(fields: [layoutId], references: [id])
+  layout   Layout   @relation(fields: [layoutId], references: [id])
   scores   Score[]
   layoutId Int
   user     User     @relation(fields: [userId], references: [id])
