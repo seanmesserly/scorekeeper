@@ -9,8 +9,8 @@ const Searchbar = () => {
   const results = ["hello world", "api", "what's up?"];
 
   return (
-    <div className="relative w-full">
-      <div className="flex items-center w-full px-4 ring-1 ring-gray-300 bg-gray-100 focus-within:bg-white hover:bg-white shadow-sm hover:shadow-lg focus-within:shadow-lg rounded-full my-1">
+    <div className="relative w-full max-w-screen-sm">
+      <div className="flex items-center mx-auto w-full px-4 ring-1 ring-gray-300 bg-gray-100 focus-within:bg-white hover:bg-white shadow-sm hover:shadow-lg focus-within:shadow-lg rounded-full my-1">
         <svg
           className="h-6 w-6 mr-2 text-gray-500 flex-none"
           xmlns="http://www.w3.org/2000/svg"
@@ -39,17 +39,19 @@ const Searchbar = () => {
           inputFocused && input.length > 0 ? "" : "hidden"
         }`}
       >
-        {results.map((result) => (
-          <Link href={`/course/${result}`}>
-            <li
-              className="px-5 py-3 text-gray-600 hover:bg-gray-100 font-semibold cursor-pointer"
-              key={result}
-            >
-              <a>{result}</a>
-            </li>
-          </Link>
-        ))}
-        <div className="border-t border-gray-300 text-center px-5 py-3">
+        {results
+          .filter((result) => result.includes(input))
+          .map((result) => (
+            <Link href={`/course/${result}`}>
+              <li
+                className="px-5 py-3 text-gray-600 hover:bg-gray-100 font-semibold cursor-pointer"
+                key={result}
+              >
+                <a>{result}</a>
+              </li>
+            </Link>
+          ))}
+        <div className="border-t border-gray-300 bg-gray-50 text-center p-5 rounded-b-lg">
           Not seeing it here?
           <Link href="/create">
             <a className="ml-1 font-medium text-purple-500 hover:text-purple-700">
