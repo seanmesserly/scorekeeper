@@ -1,0 +1,335 @@
+openapi: 3.0.0
+info:
+  title: scorekeeper
+  version: '1.0'
+  description: Interact with courses, scorecards, players, and more
+  license:
+    name: MIT
+  contact:
+    name: Sean Messerly
+    url: smess.me
+    email: seanmesserly@gmail.com
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/users/{userId}:
+    parameters:
+      - schema:
+          type: integer
+        name: userId
+        in: path
+        required: true
+        description: Id of an existing user.
+    get:
+      summary: Get User Info by User ID
+      tags: []
+      responses:
+        '200':
+          description: User Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get User Alice Smith:
+                  value:
+                    id: 142
+                    firstName: Alice
+                    lastName: Smith
+                    email: alice.smith@gmail.com
+                    dateOfBirth: '1997-10-31'
+                    emailVerified: true
+                    signUpDate: '2019-08-24'
+        '404':
+          description: User Not Found
+      operationId: get-users-userId
+      description: Retrieve the information of the user with the matching user ID.
+  /api/user:
+    post:
+      summary: Create New User
+      operationId: post-user
+      responses:
+        '201':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                New User Bob Fellow:
+                  value:
+                    id: 12
+                    firstName: Bob
+                    lastName: Fellow
+                    email: bob.fellow@gmail.com
+                    dateOfBirth: '1996-08-24'
+                    emailVerified: false
+                    createDate: '2020-11-18'
+        '400':
+          description: Missing Required Information
+        '409':
+          description: Email Already Taken
+        '500':
+          description: Internal Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+              required:
+                - firstName
+                - lastName
+                - email
+            examples:
+              Create User Bob Fellow:
+                value:
+                  firstName: Bob
+                  lastName: Fellow
+                  email: bob.fellow@gmail.com
+                  dateOfBirth: '1996-08-24'
+        description: Post the necessary fields for the API to create a new user.
+      description: Create a new user.
+    parameters: []
+  /api/users/{userId}/score:
+    post:
+      summary: Create New Score Card
+      operationId: post-user-score
+      responses:
+        '201':
+          description: Score Card Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+                  layout:
+                    $ref: "#/components/schemas/Layout"
+                  scores:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hole:
+                          $ref: "#/components/schemas/Hole"
+                        strokes:
+                          type: integer
+              examples:
+                New ScoreCard:
+                  value:
+                    id: 12
+                    firstName: Bob
+                    lastName: Fellow
+                    email: bob.fellow@gmail.com
+                    dateOfBirth: '1996-08-24'
+                    emailVerified: false
+                    createDate: '2020-11-18'
+        '400':
+          description: Missing Required Information
+        '500':
+          description: Internal Server Error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+              required:
+                - firstName
+                - lastName
+                - email
+            examples:
+              Create User Bob Fellow:
+                value:
+                  firstName: Bob
+                  lastName: Fellow
+                  email: bob.fellow@gmail.com
+                  dateOfBirth: '1996-08-24'
+        description: Post the necessary fields for the API to create a new user.
+      description: Create a new user.
+    parameters:
+      - schema:
+          type: integer
+        name: userId
+        in: path
+        required: true
+        description: ID of an existing user.
+  /api/courses/{courseId}:
+    parameters:
+      - schema:
+          type: integer
+        name: courseId
+        in: path
+        required: true
+        description: ID of an existing course.
+    get:
+      summary: Get Course Info by course ID
+      tags: []
+      responses:
+        '200':
+          description: Course Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+      operationId: get-api-course-courseid
+      description: Retrieve the information of the course with the given ID.
+  /api/course:
+    post:
+      summary: 'Create New Course'
+      operationId: post-api-course
+      responses:
+        '201':
+          description: Created course
+        '400':
+          description: Missing required information
+      description: Create a new course.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                layouts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      holes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            number:
+                              type: integer
+                            par:
+                              type: integer
+                            distance:
+                              type: integer
+            examples:
+              Sedgley-Woods:
+                value:
+                  name: Sedgley Woods
+                  layouts:
+                    - name: Red Tees
+                      holes:
+                        - number: 1
+                          par: 3
+                          distance: 247
+                        - number: 2
+                          par: 3
+                          distance: 187
+        description: Course information.
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      description: Application user
+      example:
+        id: 142
+        firstName: Alice
+        lastName: Smith
+        email: alice.smith@gmail.com
+        createDate: '2019-08-24'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        createDate:
+          type: string
+          format: date
+          description: The date that the user was created.
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+    Course:
+      title: Course
+      type: object
+      description: Disc golf course
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        layoutIds:
+          type: array
+          items:
+            type: integer
+      example:
+        id: 0
+        name: Sedgley Woods
+        layoutIds:
+          - 0
+          - 1
+    Layout:
+      title: Layout
+      type: object
+      description: Disc golf course configuration
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        holeIds:
+          type: array
+          items:
+            type: integer
+      example:
+        id: 0
+        name: Blue tees
+        holeIds:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+    Hole:
+      title: Hole
+      type: object
+      description: Disc golf hole
+      properties:
+        id:
+          type: integer
+        number:
+          type: integer
+        distance:
+          type: integer
+        par:
+          type: integer
+      example:
+        id: 0
+        number: 9
+        distance: 257
+        par: 3
