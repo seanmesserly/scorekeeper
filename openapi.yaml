@@ -97,6 +97,43 @@ paths:
         description: Post the necessary fields for the API to create a new user.
       description: Create a new user.
     parameters: []
+  /api/users/{userId}/scores:
+    get:
+      summary: Get User's Scores
+      operationId: get-user-scores
+      responses:
+        '200':
+          description: Retrieved user's scores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreCards:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        layout:
+                          $ref: "#/components/schemas/Layout"
+                        holes:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              hole:
+                                $ref: "#/components/schemas/Hole"
+                              strokes:
+                                type: integer
+        '404':
+          description: User not found
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: Id of an existing user.
   /api/users/{userId}/score:
     post:
       summary: Create New Score Card
@@ -209,21 +246,7 @@ paths:
                 layouts:
                   type: array
                   items:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      holes:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            number:
-                              type: integer
-                            par:
-                              type: integer
-                            distance:
-                              type: integer
+                    $ref: "#/components/schemas/Layout"
             examples:
               Sedgley-Woods:
                 value:
@@ -238,6 +261,63 @@ paths:
                           par: 3
                           distance: 187
         description: Course information.
+  /api/courses/{courseId}/layouts:
+    get:
+      summary: 'Get Layouts For Course'
+      operationId: get-course-layouts
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+      responses:
+        '200':
+          description: Layouts returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layouts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        layout:
+                          $ref: "#/components/schemas/Layout"
+        '404':
+          description: Course not found
+  /api/courses/{courseId}/layout:
+    post:
+      summary: Create Layout
+      operationId: post-course-layout
+      description: Create a new layout
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+      responses:
+        '201':
+          description: Layout created
+        '409':
+          description: Layout name already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                holes:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Hole"
 components:
   schemas:
     User:
@@ -279,49 +359,37 @@ components:
           type: integer
         name:
           type: string
-        layoutIds:
-          type: array
-          items:
-            type: integer
+        lat:
+          type: number
+        lon:
+          type: number
       example:
         id: 0
         name: Sedgley Woods
-        layoutIds:
-          - 0
-          - 1
+        lat: 39.95
+        lon: -75.16
     Layout:
       title: Layout
       type: object
       description: Disc golf course configuration
       properties:
-        id:
-          type: integer
         name:
           type: string
-        holeIds:
+        holes:
           type: array
           items:
-            type: integer
+            $ref: "#/components/schemas/Hole"
       example:
-        id: 0
         name: Blue tees
-        holeIds:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
+        holes:
+          - number: 1
+            distance: 257
+            par: 3
     Hole:
       title: Hole
       type: object
       description: Disc golf hole
       properties:
-        id:
-          type: integer
         number:
           type: integer
         distance:
@@ -329,7 +397,6 @@ components:
         par:
           type: integer
       example:
-        id: 0
         number: 9
         distance: 257
         par: 3
