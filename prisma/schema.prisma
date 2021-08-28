@@ -26,7 +26,8 @@ model Course {
 
 model Location {
   id     Int     @id @default(autoincrement())
-  name   String
+  city   String
+  state  String
   lat    Float
   lon    Float
   course Course?
