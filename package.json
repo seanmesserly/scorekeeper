@@ -5,6 +5,7 @@
     "build": "next build",
     "start": "next start",
     "dbinit": "prisma migrate dev --name init",
+    "dbreset": "prisma migrate reset",
     "seed": "prisma db seed --preview-feature",
     "ts-node": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\""
   },
