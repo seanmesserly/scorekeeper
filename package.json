@@ -3,7 +3,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "dbinit": "prisma migrate dev --name init",
+    "seed": "prisma db seed --preview-feature"
   },
   "dependencies": {
     "@prisma/client": "^2.30.0",
