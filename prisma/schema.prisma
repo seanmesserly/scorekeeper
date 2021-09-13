@@ -1,5 +1,5 @@
 datasource db {
-  url      = env("DATABSE_URL")
+  url      = "file:./dev.db"
   provider = "sqlite"
 }
 
@@ -26,7 +26,8 @@ model Course {
 
 model Location {
   id     Int     @id @default(autoincrement())
-  name   String
+  city   String
+  state  String
   lat    Float
   lon    Float
   course Course?
@@ -42,7 +43,7 @@ model Layout {
 }
 
 model Hole {
-  it       Int     @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   number   Int
   par      Int
   distance Int
@@ -64,8 +65,8 @@ model ScoreCard {
 model Score {
   id          Int       @id @default(autoincrement())
   strokes     Int
-  hole        Hole      @relation(fields: [holeIt], references: [it])
-  holeIt      Int
+  hole        Hole      @relation(fields: [holeId], references: [id])
+  holeId      Int
   scoreCard   ScoreCard @relation(fields: [scoreCardId], references: [id])
   scoreCardId Int
 }
