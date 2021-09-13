@@ -5,11 +5,11 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { userid: useridString } = req.query;
-  if (useridString instanceof Array) {
+  const { userId: userIdParam } = req.query;
+  if (userIdParam instanceof Array) {
     return res.status(404).end();
   }
-  const userId = parseInt(useridString);
+  const userId = parseInt(userIdParam);
   if (isNaN(userId)) {
     return res.status(404).end();
   }
