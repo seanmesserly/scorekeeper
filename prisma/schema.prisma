@@ -12,7 +12,7 @@ model User {
   createdAt  DateTime    @default(now())
   email      String      @unique
   fName      String
-  lname      String
+  lName      String
   scoreCards ScoreCard[]
 }
 

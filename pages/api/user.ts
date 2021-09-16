@@ -26,7 +26,7 @@ export default async function handle(
     }
 
     const user = await prisma.user.create({
-      data: { fName: firstName, lname: lastName, email: email },
+      data: { fName: firstName, lName: lastName, email: email },
     });
 
     return res.status(201).json(user);

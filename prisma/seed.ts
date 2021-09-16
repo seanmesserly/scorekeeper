@@ -75,7 +75,7 @@ const courseData: Prisma.CourseCreateInput[] = [
 const userData: Prisma.UserCreateInput[] = [
   {
     fName: "Sean",
-    lname: "Messerly",
+    lName: "Messerly",
     email: "sean@example.com",
     scoreCards: {
       create: [
