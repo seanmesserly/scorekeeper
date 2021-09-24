@@ -38,8 +38,7 @@ paths:
                     lastName: Smith
                     email: alice.smith@gmail.com
                     dateOfBirth: "1997-10-31"
-                    emailVerified: true
-                    signUpDate: "2019-08-24"
+                    createDate: "2019-08-24"
         "404":
           description: User Not Found
       operationId: get-users-userId
@@ -63,7 +62,6 @@ paths:
                     lastName: Fellow
                     email: bob.fellow@gmail.com
                     dateOfBirth: "1996-08-24"
-                    emailVerified: false
                     createDate: "2020-11-18"
         "400":
           description: Missing Required Information
@@ -94,6 +92,7 @@ paths:
                   lastName: Fellow
                   email: bob.fellow@gmail.com
                   dateOfBirth: "1996-08-24"
+                  createDate: "2021-09-01"
         description: Post the necessary fields for the API to create a new user.
       description: Create a new user.
     parameters: []
@@ -159,16 +158,6 @@ paths:
                           $ref: "#/components/schemas/Hole"
                         strokes:
                           type: integer
-              examples:
-                New ScoreCard:
-                  value:
-                    id: 12
-                    firstName: Bob
-                    lastName: Fellow
-                    email: bob.fellow@gmail.com
-                    dateOfBirth: "1996-08-24"
-                    emailVerified: false
-                    createDate: "2020-11-18"
         "400":
           description: Missing Required Information
         "500":
@@ -179,23 +168,37 @@ paths:
             schema:
               type: object
               properties:
-                firstName:
-                  type: string
-                lastName:
-                  type: string
-                email:
-                  type: string
+                userId:
+                  type: integer
+                layoutId:
+                  type: integer
+                scores:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      hole:
+                        type: integer
+                      strokes:
+                        type: integer
+                          
               required:
-                - firstName
-                - lastName
-                - email
+                - userId
+                - layoutId
+                - scores
             examples:
-              Create User Bob Fellow:
+              Short course:
                 value:
-                  firstName: Bob
-                  lastName: Fellow
-                  email: bob.fellow@gmail.com
-                  dateOfBirth: "1996-08-24"
+                  userId: 1
+                  layoutId: 22
+                  scores:
+                    - hole: 1
+                      strokes: 4
+                    - hole: 2
+                      strokes: 3
+                    - hole: 3
+                      strokes: 1
+                        
         description: Post the necessary fields for the API to create a new user.
       description: Create a new user.
     parameters:
@@ -263,7 +266,7 @@ paths:
         description: Course information.
   /api/courses/{courseId}/layouts:
     get:
-      summary: "Get Layouts For Course"
+      summary: Get Layouts For Course
       operationId: get-course-layouts
       parameters:
         - schema:
@@ -283,10 +286,7 @@ paths:
                   layouts:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        layout:
-                          $ref: "#/components/schemas/Layout"
+                      $ref: "#/components/schemas/Layout"
         "404":
           description: Course not found
   /api/courses/{courseId}/layout:
