@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: scorekeeper
-  version: '1.0'
+  version: "1.0"
   description: Interact with courses, scorecards, players, and more
   license:
     name: MIT
@@ -24,12 +24,12 @@ paths:
       summary: Get User Info by User ID
       tags: []
       responses:
-        '200':
+        "200":
           description: User Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
               examples:
                 Get User Alice Smith:
                   value:
@@ -37,10 +37,10 @@ paths:
                     firstName: Alice
                     lastName: Smith
                     email: alice.smith@gmail.com
-                    dateOfBirth: '1997-10-31'
+                    dateOfBirth: "1997-10-31"
                     emailVerified: true
-                    signUpDate: '2019-08-24'
-        '404':
+                    signUpDate: "2019-08-24"
+        "404":
           description: User Not Found
       operationId: get-users-userId
       description: Retrieve the information of the user with the matching user ID.
@@ -49,12 +49,12 @@ paths:
       summary: Create New User
       operationId: post-user
       responses:
-        '201':
+        "201":
           description: User Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
               examples:
                 New User Bob Fellow:
                   value:
@@ -62,14 +62,14 @@ paths:
                     firstName: Bob
                     lastName: Fellow
                     email: bob.fellow@gmail.com
-                    dateOfBirth: '1996-08-24'
+                    dateOfBirth: "1996-08-24"
                     emailVerified: false
-                    createDate: '2020-11-18'
-        '400':
+                    createDate: "2020-11-18"
+        "400":
           description: Missing Required Information
-        '409':
+        "409":
           description: Email Already Taken
-        '500':
+        "500":
           description: Internal Server Error
       requestBody:
         content:
@@ -93,7 +93,7 @@ paths:
                   firstName: Bob
                   lastName: Fellow
                   email: bob.fellow@gmail.com
-                  dateOfBirth: '1996-08-24'
+                  dateOfBirth: "1996-08-24"
         description: Post the necessary fields for the API to create a new user.
       description: Create a new user.
     parameters: []
@@ -102,7 +102,7 @@ paths:
       summary: Get User's Scores
       operationId: get-user-scores
       responses:
-        '200':
+        "200":
           description: Retrieved user's scores
           content:
             application/json:
@@ -125,7 +125,7 @@ paths:
                                 $ref: "#/components/schemas/Hole"
                               strokes:
                                 type: integer
-        '404':
+        "404":
           description: User not found
       parameters:
         - schema:
@@ -139,7 +139,7 @@ paths:
       summary: Create New Score Card
       operationId: post-user-score
       responses:
-        '201':
+        "201":
           description: Score Card Created
           content:
             application/json:
@@ -166,12 +166,12 @@ paths:
                     firstName: Bob
                     lastName: Fellow
                     email: bob.fellow@gmail.com
-                    dateOfBirth: '1996-08-24'
+                    dateOfBirth: "1996-08-24"
                     emailVerified: false
-                    createDate: '2020-11-18'
-        '400':
+                    createDate: "2020-11-18"
+        "400":
           description: Missing Required Information
-        '500':
+        "500":
           description: Internal Server Error
       requestBody:
         content:
@@ -195,7 +195,7 @@ paths:
                   firstName: Bob
                   lastName: Fellow
                   email: bob.fellow@gmail.com
-                  dateOfBirth: '1996-08-24'
+                  dateOfBirth: "1996-08-24"
         description: Post the necessary fields for the API to create a new user.
       description: Create a new user.
     parameters:
@@ -217,22 +217,22 @@ paths:
       summary: Get Course Info by course ID
       tags: []
       responses:
-        '200':
+        "200":
           description: Course Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Course'
+                $ref: "#/components/schemas/Course"
       operationId: get-api-course-courseid
       description: Retrieve the information of the course with the given ID.
   /api/course:
     post:
-      summary: 'Create New Course'
+      summary: "Create New Course"
       operationId: post-api-course
       responses:
-        '201':
+        "201":
           description: Created course
-        '400':
+        "400":
           description: Missing required information
       description: Create a new course.
       requestBody:
@@ -263,7 +263,7 @@ paths:
         description: Course information.
   /api/courses/{courseId}/layouts:
     get:
-      summary: 'Get Layouts For Course'
+      summary: "Get Layouts For Course"
       operationId: get-course-layouts
       parameters:
         - schema:
@@ -273,7 +273,7 @@ paths:
           required: true
           description: ID of an existing course.
       responses:
-        '200':
+        "200":
           description: Layouts returned
           content:
             application/json:
@@ -287,7 +287,7 @@ paths:
                       properties:
                         layout:
                           $ref: "#/components/schemas/Layout"
-        '404':
+        "404":
           description: Course not found
   /api/courses/{courseId}/layout:
     post:
@@ -302,9 +302,9 @@ paths:
           required: true
           description: ID of an existing course.
       responses:
-        '201':
+        "201":
           description: Layout created
-        '409':
+        "409":
           description: Layout name already exists
       requestBody:
         content:
@@ -329,7 +329,7 @@ components:
         firstName: Alice
         lastName: Smith
         email: alice.smith@gmail.com
-        createDate: '2019-08-24'
+        createDate: "2019-08-24"
       properties:
         id:
           type: integer
