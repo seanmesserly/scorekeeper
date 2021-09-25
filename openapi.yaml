@@ -23,6 +23,8 @@ paths:
     get:
       summary: Get User Info by User ID
       tags: []
+      operationId: get-users-userId
+      description: Retrieve the information of the user with the matching user ID.
       responses:
         "200":
           description: User Found
@@ -41,8 +43,7 @@ paths:
                     createDate: "2019-08-24"
         "404":
           description: User Not Found
-      operationId: get-users-userId
-      description: Retrieve the information of the user with the matching user ID.
+
   /api/user:
     post:
       summary: Create New User
@@ -99,6 +100,7 @@ paths:
   /api/users/{userId}/scores:
     get:
       summary: Get User's Scores
+      description: Get User's Scores
       operationId: get-user-scores
       responses:
         "200":
@@ -136,6 +138,7 @@ paths:
   /api/users/{userId}/score:
     post:
       summary: Create New Score Card
+      description: Create New Score Card
       operationId: post-user-score
       responses:
         "201":
@@ -198,9 +201,6 @@ paths:
                       strokes: 3
                     - hole: 3
                       strokes: 1
-                        
-        description: Post the necessary fields for the API to create a new user.
-      description: Create a new user.
     parameters:
       - schema:
           type: integer
@@ -232,12 +232,27 @@ paths:
     post:
       summary: "Create New Course"
       operationId: post-api-course
+      description: Create a new course.
       responses:
         "201":
-          description: Created course
+          description: Course created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
         "400":
-          description: Missing required information
-      description: Create a new course.
+          description: Bad data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                Missing-City:
+                  value:
+                    error: Missing location information
       requestBody:
         content:
           application/json:
@@ -245,6 +260,14 @@ paths:
               type: object
               properties:
                 name:
+                  type: string
+                lat:
+                  type: number
+                lon:
+                  type: number
+                city:
+                  type: string
+                state:
                   type: string
                 layouts:
                   type: array
@@ -254,19 +277,14 @@ paths:
               Sedgley-Woods:
                 value:
                   name: Sedgley Woods
-                  layouts:
-                    - name: Red Tees
-                      holes:
-                        - number: 1
-                          par: 3
-                          distance: 247
-                        - number: 2
-                          par: 3
-                          distance: 187
-        description: Course information.
+                  city: Philadelphia
+                  state: Pennsylvania
+                  lat: 39.9820372
+                  lon: -75.1944176
   /api/courses/{courseId}/layouts:
     get:
       summary: Get Layouts For Course
+      description: Get Layouts For Course
       operationId: get-course-layouts
       parameters:
         - schema:
@@ -304,6 +322,10 @@ paths:
       responses:
         "201":
           description: Layout created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Layout"
         "409":
           description: Layout name already exists
       requestBody:
@@ -359,6 +381,10 @@ components:
           type: integer
         name:
           type: string
+        city:
+          type: string
+        state:
+          type: string
         lat:
           type: number
         lon:
@@ -366,6 +392,8 @@ components:
       example:
         id: 0
         name: Sedgley Woods
+        city: Philadelphia
+        state: Pennsylvania
         lat: 39.95
         lon: -75.16
     Layout:
