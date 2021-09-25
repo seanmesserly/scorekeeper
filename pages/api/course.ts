@@ -2,38 +2,6 @@ import { Layout } from ".prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../lib/prisma";
 
-interface HoleSchema {
-  number: number;
-  par: number;
-  distance: number;
-}
-
-interface LayoutSchema {
-  name: string;
-  holes: Array<HoleSchema>;
-}
-
-function isHole(object: any): boolean {
-  return (
-    object.number &&
-    typeof object.number === "number" &&
-    object.par &&
-    typeof object.par === "number" &&
-    object.distance &&
-    typeof object.distance === "number"
-  );
-}
-
-function isLayout(object: any): boolean {
-  return (
-    object.name &&
-    typeof object.name === "string" &&
-    object.holes &&
-    object.holes instanceof Array &&
-    object.holes.every((hole) => isHole(hole))
-  );
-}
-
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
@@ -47,20 +15,7 @@ export default async function handle(
       return res.status(400).json({ error: "Missing course location" });
     }
 
-    if (!req.body.layouts) {
-      return res.status(400).json({ error: "Missing course layouts" });
-    }
-
-    if (!(req.body.layouts instanceof Array)) {
-      return res.status(400).json({ error: "Layouts must be an array" });
-    }
-
-    if (!req.body.layouts.every((layout) => isLayout(layout))) {
-      return res.status(400).json({ error: "Layouts schema invalid" });
-    }
-
     const name = req.body.name as string;
-    const layouts = req.body.layouts as Array<LayoutSchema>;
     const lat = req.body.lat as number;
     const lon = req.body.lon as number;
     const city = req.body.lat as string;
@@ -88,25 +43,15 @@ export default async function handle(
       data: { name: name, locationId: location.id },
     });
 
-    layouts.forEach(async (layout) => {
-      const createdLayout = await prisma.layout.create({
-        data: { name: layout.name, courseId: course.id },
-      });
-
-      layout.holes.forEach(async (hole) => {
-        await prisma.hole.create({
-          data: {
-            number: hole.number,
-            par: hole.par,
-            distance: hole.distance,
-            layoutId: createdLayout.id,
-          },
-        });
-      });
+    return res.status(201).json({
+      name: course.name,
+      id: course.id,
+      lat: location.lat,
+      lon: location.lon,
+      city: location.city,
+      state: location.state,
     });
-
-    return res.status(201).json(course);
   }
 
-  res.status(404).end();
+  res.status(400).json({ error: "unknown" });
 }
