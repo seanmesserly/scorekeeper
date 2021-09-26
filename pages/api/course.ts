@@ -55,5 +55,5 @@ export default async function handle(
     });
   }
 
-  res.status(400).json({ error: "unknown" });
+  res.status(404).end();
 }
