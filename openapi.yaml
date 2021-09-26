@@ -113,8 +113,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-        "500":
-          description: Internal server error.
+        "404":
+          description: User not found.
       requestBody:
         $ref: "#/components/requestBodies/CreateScore"
     parameters:
@@ -147,6 +147,8 @@ paths:
                 properties:
                   course:
                     $ref: "#/components/schemas/Course"
+        "404":
+          description: Course not found.
 
   /api/course:
     post:
@@ -169,6 +171,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "409":
+          description: Course with same name in same area exists.
       requestBody:
         $ref: "#/components/requestBodies/CreateCourse"
   /api/courses/{courseId}/layouts:
@@ -219,8 +223,10 @@ paths:
                 properties:
                   layout:
                     $ref: "#/components/schemas/Layout"
+        "404":
+          description: Course not found.
         "409":
-          description: Layout name already exists.
+          description: Layout name already exists for given course.
       requestBody:
         $ref: "#/components/requestBodies/CreateLayout"
 components:
