@@ -293,6 +293,10 @@ components:
               layoutName:
                 type: string
                 description: Name of layout for the given course.
+              datetime:
+                type: string
+                description: Date time in ISO 8601 date format
+                format: date-time
               scores:
                 type: array
                 description: Scores for the given round on the specified layout.
@@ -306,7 +310,8 @@ components:
                       type: integer
                       description: Number of throws on the given hole.
           example:
-            lyoutId: Blue tees
+            layoutName: Blue tees
+            datetime: "2014-03-12T13:37:27+00:00"
             scores:
               - number: 1
                 strokes: 3
@@ -448,6 +453,10 @@ components:
         layoutName:
           type: string
           description: Unique name for the layout played on the given course.
+        datetime:
+          type: string
+          description: Date time in ISO 8601 date format
+          format: date-time
         scores:
           type: array
           description: List of scores for the given round.
@@ -463,6 +472,7 @@ components:
       example:
         courseId: 1
         layoutName: Blue Tees
+        datetime: "2014-03-12T13:37:27+00:00"
         scores:
           - number: 1
             strokes: 3
