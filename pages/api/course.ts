@@ -44,12 +44,14 @@ export default async function handle(
     });
 
     return res.status(201).json({
-      name: course.name,
-      id: course.id,
-      lat: location.lat,
-      lon: location.lon,
-      city: location.city,
-      state: location.state,
+      course: {
+        name: course.name,
+        id: course.id,
+        lat: location.lat,
+        lon: location.lon,
+        city: location.city,
+        state: location.state,
+      },
     });
   }
 
