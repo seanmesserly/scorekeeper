@@ -31,22 +31,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-              examples:
-                Get User Alice Smith:
-                  value:
-                    id: 142
-                    firstName: Alice
-                    lastName: Smith
-                    email: alice.smith@gmail.com
-                    dateOfBirth: "1997-10-31"
-                    createDate: "2019-08-24"
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
         "404":
           description: User Not Found
 
   /api/user:
     post:
       summary: Create New User
+      description: Create a new user.
       operationId: post-user
       responses:
         "201":
@@ -54,48 +49,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-              examples:
-                New User Bob Fellow:
-                  value:
-                    id: 12
-                    firstName: Bob
-                    lastName: Fellow
-                    email: bob.fellow@gmail.com
-                    dateOfBirth: "1996-08-24"
-                    createDate: "2020-11-18"
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
         "400":
           description: Missing Required Information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "409":
           description: Email Already Taken
         "500":
           description: Internal Server Error
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                firstName:
-                  type: string
-                lastName:
-                  type: string
-                email:
-                  type: string
-              required:
-                - firstName
-                - lastName
-                - email
-            examples:
-              Create User Bob Fellow:
-                value:
-                  firstName: Bob
-                  lastName: Fellow
-                  email: bob.fellow@gmail.com
-                  dateOfBirth: "1996-08-24"
-                  createDate: "2021-09-01"
-        description: Post the necessary fields for the API to create a new user.
-      description: Create a new user.
+        $ref: "#/components/requestBodies/CreateUser"
     parameters: []
   /api/users/{userId}/scores:
     get:
@@ -113,19 +82,7 @@ paths:
                   scoreCards:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        layout:
-                          $ref: "#/components/schemas/Layout"
-                        holes:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              hole:
-                                $ref: "#/components/schemas/Hole"
-                              strokes:
-                                type: integer
+                      $ref: "#/components/schemas/ScoreCard"
         "404":
           description: User not found
       parameters:
@@ -148,59 +105,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  user:
-                    $ref: "#/components/schemas/User"
-                  layout:
-                    $ref: "#/components/schemas/Layout"
-                  scores:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        hole:
-                          $ref: "#/components/schemas/Hole"
-                        strokes:
-                          type: integer
+                  scoreCard:
+                    $ref: "#/components/schemas/ScoreCard"
         "400":
           description: Missing Required Information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Internal Server Error
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                layoutId:
-                  type: integer
-                scores:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      hole:
-                        type: integer
-                      strokes:
-                        type: integer
-                          
-              required:
-                - userId
-                - layoutId
-                - scores
-            examples:
-              Short course:
-                value:
-                  userId: 1
-                  layoutId: 22
-                  scores:
-                    - hole: 1
-                      strokes: 4
-                    - hole: 2
-                      strokes: 3
-                    - hole: 3
-                      strokes: 1
+        $ref: "#/components/requestBodies/CreateScore"
     parameters:
       - schema:
           type: integer
@@ -225,7 +141,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Course"
+                type: object
+                properties:
+                  course:
+                    $ref: "#/components/schemas/Course"
+
       operationId: get-api-course-courseid
       description: Retrieve the information of the course with the given ID.
   /api/course:
@@ -239,48 +159,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Course"
+                type: object
+                properties:
+                  course:
+                    $ref: "#/components/schemas/Course"
         "400":
           description: Bad data
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              examples:
-                Missing-City:
-                  value:
-                    error: Missing location information
+                $ref: "#/components/schemas/Error"
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                lat:
-                  type: number
-                lon:
-                  type: number
-                city:
-                  type: string
-                state:
-                  type: string
-                layouts:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Layout"
-            examples:
-              Sedgley-Woods:
-                value:
-                  name: Sedgley Woods
-                  city: Philadelphia
-                  state: Pennsylvania
-                  lat: 39.9820372
-                  lon: -75.1944176
+        $ref: "#/components/requestBodies/CreateCourse"
   /api/courses/{courseId}/layouts:
     get:
       summary: Get Layouts For Course
@@ -325,23 +215,105 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Layout"
+                type: object
+                properties:
+                  layout:
+                    $ref: "#/components/schemas/Layout"
         "409":
           description: Layout name already exists
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                holes:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Hole"
+        $ref: "#/components/requestBodies/CreateLayout"
 components:
+  requestBodies:
+    CreateUser:
+      description: Fields to create a user
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+              lastName:
+                type: string
+              email:
+                type: string
+                format: email
+          example:
+            firstName: Sean
+            lastName: Messerly
+            email: smess@example.com
+    CreateCourse:
+      description: Fields to create a course
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              lat:
+                type: number
+              lon:
+                type: number
+              city:
+                type: string
+              state:
+                type: string
+          example:
+            name: Sedgley Woods
+            city: Philadelphia
+            state: Pennsylvania
+            lat: 39.95
+            lon: -75.16
+    CreateScore:
+      description: Fields to create a score card
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              layoutId:
+                type: integer
+              scores:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    number:
+                      type: integer
+                    strokes:
+                      type: integer
+          example:
+            lyoutId: 2
+            scores:
+              - number: 1
+                strokes: 3
+    CreateLayout:
+      description: Fields to create a layout
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              holes:
+                $ref: "#/components/schemas/Hole"
   schemas:
+    Error:
+      title: Error
+      description: Error occurred
+      type: object
+      properties:
+        error:
+          type: string
+      example:
+        error: Bad request
     User:
       title: User
       type: object
@@ -390,7 +362,7 @@ components:
         lon:
           type: number
       example:
-        id: 0
+        id: 1
         name: Sedgley Woods
         city: Philadelphia
         state: Pennsylvania
@@ -428,3 +400,26 @@ components:
         number: 9
         distance: 257
         par: 3
+    ScoreCard:
+      title: Score card
+      description: Score card for a user on a given lyout
+      type: object
+      properties:
+        courseId:
+          type: integer
+        layoutName:
+          type: string
+        scores:
+          type: object
+          properties:
+            number:
+              type: integer
+            strokes:
+              type: integer
+      example:
+        courseId: 1
+        layoutName: Blue Tees
+        scores:
+          - number: 1
+            strokes: 3
+        
