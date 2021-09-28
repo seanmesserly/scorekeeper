@@ -124,6 +124,25 @@ paths:
         in: path
         required: true
         description: ID of an existing user.
+  /api/courses:
+    parameters: []
+    get:
+      summary: Get All Courses
+      description: Get a list of all courses.
+      tags: []
+      responses:
+        "200":
+          description: Courses returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    description: List of courses.
+                    items:
+                      $ref: "#/components/schemas/Course"
   /api/courses/{courseId}:
     parameters:
       - schema:
