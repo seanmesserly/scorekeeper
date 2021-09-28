@@ -22,7 +22,7 @@ export default async function handle(
     const scores = await prisma.scoreCard.findMany({
       where: { userId: user.id },
       include: {
-        layout: { include: { holes: true } },
+        layout: true,
         scores: { include: { hole: true } },
       },
     });
@@ -30,17 +30,15 @@ export default async function handle(
     return res.status(200).json({
       scoreCards: scores.map((score) => {
         return {
-          layout: {
-            name: score.layout.name,
-            holes: score.layout.holes.map((hole) => {
-              return {
-                number: hole.number,
-                distance: hole.distance,
-                par: hole.par,
-              };
-            }),
-          },
-          scores: score.scores.map((s) => {}),
+          courseId: score.layout.courseId,
+          layoutname: score.layout.name,
+          datetime: score.date.toISOString(),
+          scores: score.scores.map((s) => {
+            return {
+              number: s.hole.number,
+              strokes: s.strokes,
+            };
+          }),
         };
       }),
     });
