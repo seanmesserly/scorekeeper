@@ -309,6 +309,9 @@ components:
           schema:
             type: object
             properties:
+              courseId:
+                type: integer
+                description: Unique ID for course that was played.
               layoutName:
                 type: string
                 description: Name of layout for the given course.
@@ -329,6 +332,7 @@ components:
                       type: integer
                       description: Number of throws on the given hole.
           example:
+            courseId: 1
             layoutName: Blue tees
             datetime: "2014-03-12T13:37:27+00:00"
             scores:
