@@ -1,24 +1,39 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 
+interface RequestBody {
+  name: string;
+  lat: number;
+  lon: number;
+  city: string;
+  state: string;
+}
+
+function isRequestBody(object: any): boolean {
+  return (
+    object.name &&
+    typeof object.name === "string" &&
+    object.lat &&
+    typeof object.lat === "number" &&
+    object.lon &&
+    typeof object.lon === "number" &&
+    object.city &&
+    typeof object.city === "string" &&
+    object.state &&
+    typeof object.state === "string"
+  );
+}
+
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    if (!req.body.name) {
-      return res.status(400).json({ error: "Missing course name" });
+    if (!isRequestBody(req.body)) {
+      return res.status(400).json({ error: "Invalid fields" });
     }
 
-    if (!req.body.lat || !req.body.lon || !req.body.city || !req.body.state) {
-      return res.status(400).json({ error: "Missing course location" });
-    }
-
-    const name = req.body.name as string;
-    const lat = req.body.lat as number;
-    const lon = req.body.lon as number;
-    const city = req.body.lat as string;
-    const state = req.body.lat as string;
+    const { name, lat, lon, city, state } = req.body as RequestBody;
 
     const sameLocation = await prisma.location.findFirst({
       where: { city: city, state: state },
