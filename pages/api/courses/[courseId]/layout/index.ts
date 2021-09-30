@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../../lib/prisma";
+import { getNumericId } from "../../../../../lib/util";
 
 interface HoleSchema {
   number: number;
@@ -22,12 +23,8 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { courseId: courseIdParam } = req.query;
-  if (courseIdParam instanceof Array) {
-    return res.status(404).end();
-  }
-  const courseId = parseInt(courseIdParam);
-  if (isNaN(courseId)) {
+  const courseId = getNumericId(req.query.courseId);
+  if (!courseId) {
     return res.status(404).end();
   }
 

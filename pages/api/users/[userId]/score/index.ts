@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../../lib/prisma";
+import { getNumericId } from "../../../../../lib/util";
 
 interface ScoreSchema {
   number: number;
@@ -19,12 +20,8 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { userId: userIdParam } = req.query;
-  if (userIdParam instanceof Array) {
-    return res.status(404).end();
-  }
-  const userId = parseInt(userIdParam);
-  if (isNaN(userId)) {
+  const userId = getNumericId(req.query.userId);
+  if (!userId) {
     return res.status(404).end();
   }
 
