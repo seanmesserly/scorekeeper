@@ -1,22 +1,32 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 
+interface RequestBody {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+function isRequestBody(object: any): boolean {
+  return (
+    object.firstName &&
+    typeof object.firstName === "string" &&
+    object.lastName &&
+    typeof object.lastName === "string" &&
+    object.email &&
+    typeof object.email === "string"
+  );
+}
+
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const { firstName, lastName, email } = req.body;
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      typeof firstName !== "string" ||
-      typeof lastName !== "string" ||
-      typeof email !== "string"
-    ) {
-      return res.status(400).end();
+    if (!isRequestBody(req.body)) {
+      return res.status(400).json({ error: "Invalid input" });
     }
+    const { firstName, lastName, email } = req.body as RequestBody;
 
     const userWithEmail = await prisma.user.findFirst({
       where: { email: email },
