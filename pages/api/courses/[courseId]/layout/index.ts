@@ -19,6 +19,21 @@ function isHole(object: any): boolean {
   );
 }
 
+interface RequestBody {
+  name: string;
+  holes: Array<HoleSchema>;
+}
+
+function isRequestBody(object: any): boolean {
+  return (
+    object.name &&
+    typeof object.name === "string" &&
+    object.holes &&
+    object.holes instanceof Array &&
+    object.holes.every((hole) => isHole(hole))
+  );
+}
+
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
@@ -36,17 +51,11 @@ export default async function handle(
       return res.status(404).end();
     }
 
-    const name = req.body.name as string;
-    const holesProvided = req.body.holes;
-    if (!(holesProvided instanceof Array)) {
-      return res.status(400).json({ error: "holes must be an array" });
+    if (!isRequestBody(req.body)) {
+      return res.status(400).json({ error: "Invalid input" });
     }
-    if (!holesProvided.every((hole) => isHole(hole))) {
-      return res
-        .status(400)
-        .json({ error: "holes must be an array of type Hole" });
-    }
-    const holes = holesProvided as Array<HoleSchema>;
+
+    const { name, holes } = req.body as RequestBody;
 
     const layout = await prisma.layout.create({
       data: {
