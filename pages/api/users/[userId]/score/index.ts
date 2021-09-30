@@ -15,6 +15,34 @@ function isScore(object: any): boolean {
   );
 }
 
+interface RequestBody {
+  courseId: number;
+  layoutName: string;
+  datetime: string;
+  scores: Array<ScoreSchema>;
+}
+
+function isRequestBody(object: any): boolean {
+  if (
+    !object.courseId ||
+    typeof object.courseId !== "number" ||
+    !object.layoutName ||
+    typeof object.layoutName !== "string" ||
+    !object.datetime ||
+    typeof object.datetime !== "string" ||
+    !(object.scores instanceof Array) ||
+    !object.scores.every((score) => isScore(score))
+  ) {
+    return false;
+  }
+  const date = new Date(object.datetime);
+  if (isNaN(date.getTime()) || object.datetime !== date.toISOString()) {
+    return false;
+  }
+
+  return true;
+}
+
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
@@ -34,52 +62,19 @@ export default async function handle(
       return res.status(404).end();
     }
 
-    if (
-      !req.body.courseId ||
-      !req.body.layoutName ||
-      !req.body.datetime ||
-      !req.body.scores
-    ) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!isRequestBody(req.body)) {
+      return res.status(400).json({ error: "Invalid input" });
     }
 
-    const courseId = parseInt(req.body.courseId);
-    if (isNaN(courseId)) {
-      return res.status(400).json({ error: "courseId must be an integer" });
-    }
-    if (typeof req.body.layoutName !== "string") {
-      return res.status(400).json({ error: "layoutName must be a string" });
-    }
+    const { courseId, layoutName, datetime, scores } = req.body as RequestBody;
 
     const layout = await prisma.layout.findFirst({
-      where: { courseId: courseId, name: req.body.layoutName },
+      where: { courseId: courseId, name: layoutName },
     });
     if (!layout) {
       return res.status(400).json({ error: "Layout not found" });
     }
 
-    if (typeof req.body.datetime !== "string") {
-      return res
-        .status(400)
-        .json({ error: "datetime must be an ISO 8601 string" });
-    }
-    const date = new Date(req.body.datetime);
-    if (isNaN(date.getTime()) || req.body.datetime !== date.toISOString()) {
-      return res
-        .status(400)
-        .json({ error: "datetime must be an ISO 8601 string" });
-    }
-
-    if (!(req.body.scores instanceof Array)) {
-      return res.status(400).json({ error: "scores must be an array" });
-    }
-    if (!req.body.scores.every((score) => isScore(score))) {
-      return res
-        .status(400)
-        .json({ error: "scores must be an array of Score objects" });
-    }
-
-    const scores = req.body.scores as Array<ScoreSchema>;
     const scoreObjects = await Promise.all(
       scores.map(async (score) => {
         // TODO: we are assuming this returns a value
@@ -95,7 +90,7 @@ export default async function handle(
 
     const scoreCard = await prisma.scoreCard.create({
       data: {
-        date: date,
+        date: new Date(datetime),
         layoutId: layout.id,
         userId: user.id,
         scores: {
