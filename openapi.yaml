@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: scorekeeper
   version: "1.0"
-  description: Interact with courses, scorecards, players, and more
+  description: Interact with courses, scorecards, players, and more.
   license:
     name: MIT
   contact:
@@ -19,90 +19,61 @@ paths:
         name: userId
         in: path
         required: true
-        description: Id of an existing user.
+        description: ID of an existing user.
     get:
       summary: Get User Info by User ID
       tags: []
+      operationId: get-users-userId
+      description: Retrieve the information of the user with the matching user ID.
       responses:
         "200":
-          description: User Found
+          description: User found.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-              examples:
-                Get User Alice Smith:
-                  value:
-                    id: 142
-                    firstName: Alice
-                    lastName: Smith
-                    email: alice.smith@gmail.com
-                    dateOfBirth: "1997-10-31"
-                    createDate: "2019-08-24"
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
         "404":
-          description: User Not Found
-      operationId: get-users-userId
-      description: Retrieve the information of the user with the matching user ID.
+          description: User not found.
+
   /api/user:
     post:
       summary: Create New User
+      description: Create a new user.
       operationId: post-user
       responses:
         "201":
-          description: User Created
+          description: User created.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-              examples:
-                New User Bob Fellow:
-                  value:
-                    id: 12
-                    firstName: Bob
-                    lastName: Fellow
-                    email: bob.fellow@gmail.com
-                    dateOfBirth: "1996-08-24"
-                    createDate: "2020-11-18"
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
         "400":
-          description: Missing Required Information
+          description: Missing required information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "409":
-          description: Email Already Taken
+          description: Email already taken.
         "500":
-          description: Internal Server Error
+          description: Internal server error.
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                firstName:
-                  type: string
-                lastName:
-                  type: string
-                email:
-                  type: string
-              required:
-                - firstName
-                - lastName
-                - email
-            examples:
-              Create User Bob Fellow:
-                value:
-                  firstName: Bob
-                  lastName: Fellow
-                  email: bob.fellow@gmail.com
-                  dateOfBirth: "1996-08-24"
-                  createDate: "2021-09-01"
-        description: Post the necessary fields for the API to create a new user.
-      description: Create a new user.
+        $ref: "#/components/requestBodies/CreateUser"
     parameters: []
   /api/users/{userId}/scores:
     get:
       summary: Get User's Scores
+      description: Get user's scores
       operationId: get-user-scores
       responses:
         "200":
-          description: Retrieved user's scores
+          description: Retrieved user's scores.
           content:
             application/json:
               schema:
@@ -111,96 +82,41 @@ paths:
                   scoreCards:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        layout:
-                          $ref: "#/components/schemas/Layout"
-                        holes:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              hole:
-                                $ref: "#/components/schemas/Hole"
-                              strokes:
-                                type: integer
+                      $ref: "#/components/schemas/ScoreCard"
         "404":
-          description: User not found
+          description: User not found.
       parameters:
         - schema:
             type: integer
           name: userId
           in: path
           required: true
-          description: Id of an existing user.
+          description: ID of an existing user.
   /api/users/{userId}/score:
     post:
       summary: Create New Score Card
+      description: Create a new score card.
       operationId: post-user-score
       responses:
         "201":
-          description: Score Card Created
+          description: Score card created.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  user:
-                    $ref: "#/components/schemas/User"
-                  layout:
-                    $ref: "#/components/schemas/Layout"
-                  scores:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        hole:
-                          $ref: "#/components/schemas/Hole"
-                        strokes:
-                          type: integer
+                  scoreCard:
+                    $ref: "#/components/schemas/ScoreCard"
         "400":
-          description: Missing Required Information
-        "500":
-          description: Internal Server Error
+          description: Missing required information.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found.
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                layoutId:
-                  type: integer
-                scores:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      hole:
-                        type: integer
-                      strokes:
-                        type: integer
-                          
-              required:
-                - userId
-                - layoutId
-                - scores
-            examples:
-              Short course:
-                value:
-                  userId: 1
-                  layoutId: 22
-                  scores:
-                    - hole: 1
-                      strokes: 4
-                    - hole: 2
-                      strokes: 3
-                    - hole: 3
-                      strokes: 1
-                        
-        description: Post the necessary fields for the API to create a new user.
-      description: Create a new user.
+        $ref: "#/components/requestBodies/CreateScore"
     parameters:
       - schema:
           type: integer
@@ -208,6 +124,25 @@ paths:
         in: path
         required: true
         description: ID of an existing user.
+  /api/courses:
+    parameters: []
+    get:
+      summary: Get All Courses
+      description: Get a list of all courses.
+      tags: []
+      responses:
+        "200":
+          description: Courses returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    description: List of courses.
+                    items:
+                      $ref: "#/components/schemas/Course"
   /api/courses/{courseId}:
     parameters:
       - schema:
@@ -218,55 +153,51 @@ paths:
         description: ID of an existing course.
     get:
       summary: Get Course Info by course ID
+      operationId: get-api-course-courseid
+      description: Retrieve the information of the course with the given ID.
       tags: []
       responses:
         "200":
-          description: Course Found
+          description: Course found.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Course"
-      operationId: get-api-course-courseid
-      description: Retrieve the information of the course with the given ID.
+                type: object
+                properties:
+                  course:
+                    $ref: "#/components/schemas/Course"
+        "404":
+          description: Course not found.
+
   /api/course:
     post:
       summary: "Create New Course"
       operationId: post-api-course
+      description: Create a new course.
       responses:
         "201":
-          description: Created course
+          description: Course created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  course:
+                    $ref: "#/components/schemas/Course"
         "400":
-          description: Missing required information
-      description: Create a new course.
+          description: Bad data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Course with same name in same area exists.
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                layouts:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Layout"
-            examples:
-              Sedgley-Woods:
-                value:
-                  name: Sedgley Woods
-                  layouts:
-                    - name: Red Tees
-                      holes:
-                        - number: 1
-                          par: 3
-                          distance: 247
-                        - number: 2
-                          par: 3
-                          distance: 187
-        description: Course information.
+        $ref: "#/components/requestBodies/CreateCourse"
   /api/courses/{courseId}/layouts:
     get:
       summary: Get Layouts For Course
+      description: Get layouts for the given course.
       operationId: get-course-layouts
       parameters:
         - schema:
@@ -277,7 +208,7 @@ paths:
           description: ID of an existing course.
       responses:
         "200":
-          description: Layouts returned
+          description: Layouts found.
           content:
             application/json:
               schema:
@@ -288,12 +219,12 @@ paths:
                     items:
                       $ref: "#/components/schemas/Layout"
         "404":
-          description: Course not found
+          description: Course not found.
   /api/courses/{courseId}/layout:
     post:
       summary: Create Layout
       operationId: post-course-layout
-      description: Create a new layout
+      description: Create a new layout.
       parameters:
         - schema:
             type: integer
@@ -303,27 +234,141 @@ paths:
           description: ID of an existing course.
       responses:
         "201":
-          description: Layout created
+          description: Layout created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    $ref: "#/components/schemas/Layout"
+        "404":
+          description: Course not found.
         "409":
-          description: Layout name already exists
+          description: Layout name already exists for given course.
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                holes:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Hole"
+        $ref: "#/components/requestBodies/CreateLayout"
 components:
+  requestBodies:
+    CreateUser:
+      description: Fields to create a user.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+                description: User's first name.
+              lastName:
+                type: string
+                description: User's last name.
+              email:
+                type: string
+                format: email
+                description: Valid email address, must be unique.
+          example:
+            firstName: Sean
+            lastName: Messerly
+            email: smess@example.com
+    CreateCourse:
+      description: Fields to create a course.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Name of course.
+              lat:
+                type: number
+                description: Lattitude of course.
+              lon:
+                type: number
+                description: Longitude of course.
+              city:
+                type: string
+                description: City in which course resides.
+              state:
+                type: string
+                description: State in which course resides.
+          example:
+            name: Sedgley Woods
+            city: Philadelphia
+            state: Pennsylvania
+            lat: 39.95
+            lon: -75.16
+    CreateScore:
+      description: Fields to create a score card.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              courseId:
+                type: integer
+                description: Unique ID for course that was played.
+              layoutName:
+                type: string
+                description: Name of layout for the given course.
+              datetime:
+                type: string
+                description: Date time in ISO 8601 date format
+                format: date-time
+              scores:
+                type: array
+                description: Scores for the given round on the specified layout.
+                items:
+                  type: object
+                  properties:
+                    number:
+                      type: integer
+                      description: Hole number.
+                    strokes:
+                      type: integer
+                      description: Number of throws on the given hole.
+          example:
+            courseId: 1
+            layoutName: Blue tees
+            datetime: "2014-03-12T13:37:27+00:00"
+            scores:
+              - number: 1
+                strokes: 3
+    CreateLayout:
+      description: Fields to create a layout.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Descriptive name of layout, must be unique to the course.
+              holes:
+                type: array
+                description: List of holes included in the given layout.
+                items:
+                  $ref: "#/components/schemas/Hole"
   schemas:
+    Error:
+      title: Error
+      description: Error occurred.
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message.
+      example:
+        error: Bad request
     User:
       title: User
       type: object
-      description: Application user
+      description: Application user.
       example:
         id: 142
         firstName: Alice
@@ -336,10 +381,13 @@ components:
           description: Unique identifier for the given user.
         firstName:
           type: string
+          description: First name of the user.
         lastName:
           type: string
+          description: Last name of the user.
         email:
           type: string
+          description: Email address of the user, must be unique.
           format: email
         createDate:
           type: string
@@ -353,30 +401,44 @@ components:
     Course:
       title: Course
       type: object
-      description: Disc golf course
+      description: Disc golf course.
       properties:
         id:
           type: integer
+          description: Unique ID of course.
         name:
           type: string
+          description: Name of course.
         lat:
           type: number
+          description: Lattitude of course.
         lon:
           type: number
+          description: Longitude of course.
+        city:
+          type: string
+          description: City in which course resides.
+        state:
+          type: string
+          description: State in which course resides.
       example:
-        id: 0
+        id: 1
         name: Sedgley Woods
+        city: Philadelphia
+        state: Pennsylvania
         lat: 39.95
         lon: -75.16
     Layout:
       title: Layout
       type: object
-      description: Disc golf course configuration
+      description: Specific hole configuration.
       properties:
         name:
           type: string
+          description: Descriptive name of layout, must be unique to the course.
         holes:
           type: array
+          description: List of holes included in the given layout.
           items:
             $ref: "#/components/schemas/Hole"
       example:
@@ -388,15 +450,52 @@ components:
     Hole:
       title: Hole
       type: object
-      description: Disc golf hole
+      description: Disc golf hole.
       properties:
         number:
           type: integer
+          description: Hole number on the layout, e.g. 1 for the first hole.
         distance:
           type: integer
+          description: Distance in feet from the tee to the basket.
         par:
           type: integer
+          description: Expected number of strokes defined for the hole.
       example:
         number: 9
         distance: 257
         par: 3
+    ScoreCard:
+      title: Score card
+      description: Score card for a user on a given layout.
+      type: object
+      properties:
+        courseId:
+          type: integer
+          description: Unique ID to define the course on which the scores occurred.
+        layoutName:
+          type: string
+          description: Unique name for the layout played on the given course.
+        datetime:
+          type: string
+          description: Date time in ISO 8601 date format
+          format: date-time
+        scores:
+          type: array
+          description: List of scores for the given round.
+          items:
+            type: object
+            properties:
+              number:
+                type: integer
+                description: Hole number on the layout, e.g. 1 for the first hole.
+              strokes:
+                type: integer
+                description: Number of throws and penalty shots required to get from the tee to having the disc in the basket.
+      example:
+        courseId: 1
+        layoutName: Blue Tees
+        datetime: "2014-03-12T13:37:27+00:00"
+        scores:
+          - number: 1
+            strokes: 3
