@@ -12,6 +12,35 @@ info:
 servers:
   - url: http://localhost:3000
 paths:
+  /api/user:
+    post:
+      summary: Create New User
+      description: Create a new user.
+      operationId: post-user
+      responses:
+        "201":
+          description: User created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Missing required information.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Email already taken.
+        "500":
+          description: Internal server error.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUser"
+    parameters: []
+
   /api/users/{userId}:
     parameters:
       - schema:
@@ -42,6 +71,8 @@ paths:
       tags: []
       operationId: put-users-userId
       description: Update user with the matching user ID.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUser"
       responses:
         "200":
           description: User updated.
@@ -75,60 +106,6 @@ paths:
         "409":
           description: Failed to delete user.
 
-  /api/user:
-    post:
-      summary: Create New User
-      description: Create a new user.
-      operationId: post-user
-      responses:
-        "201":
-          description: User created.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    $ref: "#/components/schemas/User"
-        "400":
-          description: Missing required information.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "409":
-          description: Email already taken.
-        "500":
-          description: Internal server error.
-      requestBody:
-        $ref: "#/components/requestBodies/CreateUser"
-    parameters: []
-  /api/users/{userId}/scores:
-    get:
-      summary: Get User's Scores
-      description: Get user's scores
-      operationId: get-user-scores
-      responses:
-        "200":
-          description: Retrieved user's scores.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  scoreCards:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/ScoreCard"
-        "404":
-          description: User not found.
-      parameters:
-        - schema:
-            type: integer
-          name: userId
-          in: path
-          required: true
-          description: ID of an existing user.
   /api/users/{userId}/score:
     post:
       summary: Create New Score Card
@@ -161,6 +138,152 @@ paths:
         in: path
         required: true
         description: ID of an existing user.
+
+  /api/users/{userId}/scores:
+    get:
+      summary: Get User's Scores
+      description: Get user's scores.
+      operationId: get-user-scores
+      responses:
+        "200":
+          description: Retrieved user's scores.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreCards:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ScoreCard"
+        "404":
+          description: User not found.
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+          
+  /api/users/{userId}/scores/{scoreId}:
+    get:
+      summary: Get Specified Score
+      description: Get specific user score.
+      operationId: get-user-userId-scores-scoreId
+      responses:
+        "200":
+          description: Retrieved specified score.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreCard:
+                    $ref: "#/components/schemas/ScoreCard"
+        "404":
+          description: User or score not found.
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+        - schema:
+            type: integer
+          name: scoreId
+          in: path
+          required: true
+          description: ID of an existing score.
+    put:
+      summary: Update Specified Score
+      description: Update specific user score.
+      operationId: put-user-userId-scores-scoreId
+      requestBody:
+        $ref: "#/components/requestBodies/CreateScore"
+      responses:
+        "200":
+          description: Updated specified score.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreCard:
+                    $ref: "#/components/schemas/ScoreCard"
+        "400":
+          description: Missing required information.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User or score not found.
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+        - schema:
+            type: integer
+          name: scoreId
+          in: path
+          required: true
+          description: ID of an existing score.
+    delete:
+      summary: Delete Specified Score
+      description: Delete specific user score.
+      operationId: delete-user-userId-scores-scoreId
+      responses:
+        "204":
+          description: Deleted specified score.
+        "404":
+          description: User or score not found.
+        "409":
+          description: Failed to delete score.
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+        - schema:
+            type: integer
+          name: scoreId
+          in: path
+          required: true
+          description: ID of an existing score.
+
+  /api/course:
+    post:
+      summary: "Create New Course"
+      operationId: post-api-course
+      description: Create a new course.
+      responses:
+        "201":
+          description: Course created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  course:
+                    $ref: "#/components/schemas/Course"
+        "400":
+          description: Bad data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Course with same name in same area exists.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateCourse"
+
   /api/courses:
     parameters: []
     get:
@@ -206,31 +329,6 @@ paths:
         "404":
           description: Course not found.
 
-  /api/course:
-    post:
-      summary: "Create New Course"
-      operationId: post-api-course
-      description: Create a new course.
-      responses:
-        "201":
-          description: Course created.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  course:
-                    $ref: "#/components/schemas/Course"
-        "400":
-          description: Bad data.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "409":
-          description: Course with same name in same area exists.
-      requestBody:
-        $ref: "#/components/requestBodies/CreateCourse"
   /api/courses/{courseId}/layouts:
     get:
       summary: Get Layouts For Course
