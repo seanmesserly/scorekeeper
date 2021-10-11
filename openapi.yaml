@@ -368,32 +368,6 @@ paths:
         "409":
           description: Failed to delete course.
 
-  /api/courses/{courseId}/layouts:
-    get:
-      summary: Get Layouts For Course
-      description: Get layouts for the given course.
-      operationId: get-course-layouts
-      parameters:
-        - schema:
-            type: integer
-          name: courseId
-          in: path
-          required: true
-          description: ID of an existing course.
-      responses:
-        "200":
-          description: Layouts found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  layouts:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Layout"
-        "404":
-          description: Course not found.
   /api/courses/{courseId}/layout:
     post:
       summary: Create Layout
@@ -422,6 +396,124 @@ paths:
           description: Layout name already exists for given course.
       requestBody:
         $ref: "#/components/requestBodies/CreateLayout"
+
+  /api/courses/{courseId}/layouts:
+    get:
+      summary: Get Layouts For Course
+      description: Get layouts for the given course.
+      operationId: get-course-layouts
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+      responses:
+        "200":
+          description: Layouts found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layouts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Layout"
+        "404":
+          description: Course not found.
+  
+  /api/courses/{courseId}/layouts/{layoutId}:
+    get:
+      summary: Get Specified Layout
+      description: Get layout with given ID for the given course.
+      operationId: get-course-layout-layoutId
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+        - schema:
+            type: integer
+          name: layoutId
+          in: path
+          required: true
+          description: ID of an existing layout.
+      responses:
+        "200":
+          description: Layout found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    $ref: "#/components/schemas/Layout"
+        "404":
+          description: Course or layout not found.
+    put:
+      summary: Update Specified Layout
+      description: Update layout with given ID for the given course.
+      operationId: put-course-layout-layoutId
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+        - schema:
+            type: integer
+          name: layoutId
+          in: path
+          required: true
+          description: ID of an existing layout.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateLayout"
+      responses:
+        "200":
+          description: Layout updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    $ref: "#/components/schemas/Layout"
+        "400":
+          description: Failed to create layout.
+        "404":
+          description: Course or layout not found.
+        "409":
+          description: Layout with same name for course exists.
+    delete:
+      summary: Delete Specified Layout
+      description: Delete layout with given ID for the given course.
+      operationId: delete-course-layout-layoutId
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+        - schema:
+            type: integer
+          name: layoutId
+          in: path
+          required: true
+          description: ID of an existing layout.
+      responses:
+        "204":
+          description: Layout deleted.
+        "404":
+          description: Course or layout not found.
+        "409":
+          description: Failed to delete layout.
+
 components:
   requestBodies:
     CreateUser:
