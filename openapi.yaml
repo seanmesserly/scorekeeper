@@ -578,9 +578,9 @@ components:
               courseId:
                 type: integer
                 description: Unique ID for course that was played.
-              layoutName:
-                type: string
-                description: Name of layout for the given course.
+              layoutId:
+                type: integer
+                description: Unique ID of layout for the given course.
               datetime:
                 type: string
                 description: Date time in ISO 8601 date format
@@ -599,7 +599,7 @@ components:
                       description: Number of throws on the given hole.
           example:
             courseId: 1
-            layoutName: Blue tees
+            layoutId: 4
             datetime: "2014-03-12T13:37:27+00:00"
             scores:
               - number: 1
@@ -699,6 +699,9 @@ components:
       type: object
       description: Specific hole configuration.
       properties:
+        id:
+          type: integer
+          description: Unique ID of layout.
         name:
           type: string
           description: Descriptive name of layout, must be unique to the course.
@@ -708,6 +711,7 @@ components:
           items:
             $ref: "#/components/schemas/Hole"
       example:
+        id: 1
         name: Blue tees
         holes:
           - number: 1
@@ -736,12 +740,15 @@ components:
       description: Score card for a user on a given layout.
       type: object
       properties:
+        id:
+          type: integer
+          description: Unique ID of score card.
         courseId:
           type: integer
           description: Unique ID to define the course on which the scores occurred.
-        layoutName:
-          type: string
-          description: Unique name for the layout played on the given course.
+        layoutId:
+          type: integer
+          description: Unique id for the layout played on the given course.
         datetime:
           type: string
           description: Date time in ISO 8601 date format
@@ -759,8 +766,9 @@ components:
                 type: integer
                 description: Number of throws and penalty shots required to get from the tee to having the disc in the basket.
       example:
+        id: 3
         courseId: 1
-        layoutName: Blue Tees
+        layoutId: 4
         datetime: "2014-03-12T13:37:27+00:00"
         scores:
           - number: 1
