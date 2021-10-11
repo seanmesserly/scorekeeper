@@ -67,6 +67,18 @@ export default async function handle(
         },
       });
     }
+  } else if (req.method === "DELETE") {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).end();
+    }
+
+    try {
+      await prisma.user.delete({ where: { id: user.id } });
+      return res.status(204).end();
+    } catch (err: any) {
+      return res.status(409).json({ error: err });
+    }
   }
 
   return res.status(404).end();
