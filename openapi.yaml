@@ -328,6 +328,45 @@ paths:
                     $ref: "#/components/schemas/Course"
         "404":
           description: Course not found.
+    put:
+      summary: Update Course Info by Course ID
+      operationId: put-api-course-courseid
+      description: Update the information of the course with the given ID.
+      tags: []
+      requestBody:
+        $ref: "#/components/requestBodies/CreateCourse"
+      responses:
+        "200":
+          description: Course updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  course:
+                    $ref: "#/components/schemas/Course"
+        "400":
+          description: Bad data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Course not found.
+        "409":
+          description: Course with same name in same area exists.
+    delete:
+      summary: Delete Course by Course ID
+      operationId: delete-api-course-courseid
+      description: Delete the course with the given ID.
+      tags: []
+      responses:
+        "204":
+          description: Course deleted.
+        "404":
+          description: Course not found.
+        "409":
+          description: Failed to delete course.
 
   /api/courses/{courseId}/layouts:
     get:
