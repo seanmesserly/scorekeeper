@@ -105,6 +105,10 @@ paths:
           description: User not found.
         "409":
           description: Failed to delete user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/users/{userId}/score:
     post:
@@ -244,6 +248,10 @@ paths:
           description: User or score not found.
         "409":
           description: Failed to delete score.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
       parameters:
         - schema:
             type: integer
@@ -367,6 +375,10 @@ paths:
           description: Course not found.
         "409":
           description: Failed to delete course.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/courses/{courseId}/layout:
     post:
@@ -485,6 +497,10 @@ paths:
                     $ref: "#/components/schemas/Layout"
         "400":
           description: Failed to create layout.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "404":
           description: Course or layout not found.
         "409":
@@ -513,6 +529,10 @@ paths:
           description: Course or layout not found.
         "409":
           description: Failed to delete layout.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
   requestBodies:
