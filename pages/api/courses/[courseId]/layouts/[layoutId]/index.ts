@@ -123,6 +123,24 @@ export default async function handle(
         }),
       },
     });
+  } else if (req.method === "DELETE") {
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+    });
+    if (!course) {
+      return res.status(404).end();
+    }
+    const layout = await prisma.layout.findUnique({
+      where: { id: layoutId },
+      include: { holes: true },
+    });
+    if (!layout) {
+      return res.status(404).end();
+    }
+
+    await prisma.layout.delete({ where: { id: layout.id } });
+
+    return res.status(204).end();
   }
 
   return res.status(404).end();
