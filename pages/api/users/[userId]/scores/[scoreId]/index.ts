@@ -149,6 +149,23 @@ export default async function handle(
         scores: scoreObjects,
       },
     });
+  } else if (req.method === "DELETE") {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      return res.status(404).end();
+    }
+    const scoreCard = await prisma.scoreCard.findUnique({
+      where: { id: scoreId },
+    });
+    if (!scoreCard) {
+      return res.status(404).end();
+    }
+
+    await prisma.scoreCard.delete({ where: { id: scoreId } });
+
+    return res.status(204).end();
   }
 
   return res.status(404).end();
