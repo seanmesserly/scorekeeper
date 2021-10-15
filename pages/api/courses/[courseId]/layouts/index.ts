@@ -28,6 +28,7 @@ export default async function handle(
           where: { layoutId: layout.id },
         });
         return {
+          id: layout.id,
           name: layout.name,
           holes: holes.map((hole) => {
             return {

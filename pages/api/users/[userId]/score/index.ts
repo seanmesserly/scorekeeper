@@ -18,7 +18,7 @@ function isScore(object: any): boolean {
 
 interface RequestBody {
   courseId: number;
-  layoutName: string;
+  layoutId: number;
   datetime: string;
   scores: Array<ScoreSchema>;
 }
@@ -27,8 +27,8 @@ function isRequestBody(object: any): boolean {
   if (
     !object.courseId ||
     typeof object.courseId !== "number" ||
-    !object.layoutName ||
-    typeof object.layoutName !== "string" ||
+    !object.layoutId ||
+    typeof object.layoutId !== "number" ||
     !object.datetime ||
     typeof object.datetime !== "string" ||
     !(object.scores instanceof Array) ||
@@ -63,10 +63,10 @@ export default async function handle(
       return res.status(400).json({ error: "Invalid input" });
     }
 
-    const { courseId, layoutName, datetime, scores } = req.body as RequestBody;
+    const { courseId, layoutId, datetime, scores } = req.body as RequestBody;
 
-    const layout = await prisma.layout.findFirst({
-      where: { courseId: courseId, name: layoutName },
+    const layout = await prisma.layout.findUnique({
+      where: { id: layoutId },
     });
     if (!layout) {
       return res.status(400).json({ error: "Layout not found" });
@@ -99,7 +99,7 @@ export default async function handle(
     return res.status(201).json({
       scoreCard: {
         courseId: layout.courseId,
-        layoutName: layout.name,
+        layoutId: layout.id,
         datetime: scoreCard.date.toISOString(),
         scores: scoreObjects,
       },
