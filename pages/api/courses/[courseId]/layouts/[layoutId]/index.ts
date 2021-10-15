@@ -26,6 +26,9 @@ export default async function handle(
       where: { id: layoutId },
       include: { holes: true },
     });
+    if (!layout) {
+      return res.status(404).end();
+    }
 
     return res.status(200).json({
       layout: {
