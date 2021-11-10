@@ -2,6 +2,23 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../lib/prisma";
 import { getNumericId } from "../../../../lib/util";
 
+interface PutBody {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+function isPutBody(object: any): boolean {
+  return (
+    object.firstName &&
+    typeof object.firstName === "string" &&
+    object.lastName &&
+    typeof object.lastName === "string" &&
+    object.email &&
+    typeof object.email === "string"
+  );
+}
+
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
@@ -17,6 +34,51 @@ export default async function handle(
       return res.status(200).json(user);
     }
     return res.status(404).end();
+  } else if (req.method === "PUT") {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).end();
+    }
+
+    if (!isPutBody(req.body)) {
+      return res.status(400).json({ error: "Invalid input" });
+    }
+    const { firstName, lastName, email } = req.body as PutBody;
+
+    const userWithEmail = await prisma.user.findFirst({
+      where: { email: email },
+    });
+    if (userWithEmail && userWithEmail.id !== user.id) {
+      return res.status(409).end();
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { fName: firstName, lName: lastName, email: email },
+    });
+    if (updatedUser) {
+      return res.status(200).json({
+        user: {
+          id: updatedUser.id,
+          firstName: updatedUser.fName,
+          lastName: updatedUser.lName,
+          email: updatedUser.email,
+          createDate: updatedUser.createdAt.toISOString(),
+        },
+      });
+    }
+  } else if (req.method === "DELETE") {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).end();
+    }
+
+    try {
+      await prisma.user.delete({ where: { id: user.id } });
+      return res.status(204).end();
+    } catch (err: any) {
+      return res.status(409).json({ error: err });
+    }
   }
 
   return res.status(404).end();
