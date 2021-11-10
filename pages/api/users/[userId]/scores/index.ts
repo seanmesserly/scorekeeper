@@ -28,7 +28,7 @@ export default async function handle(
       scoreCards: scores.map((score) => {
         return {
           courseId: score.layout.courseId,
-          layoutname: score.layout.name,
+          layoutId: score.layout.id,
           datetime: score.date.toISOString(),
           scores: score.scores.map((s) => {
             return {

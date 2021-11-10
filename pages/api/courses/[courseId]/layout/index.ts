@@ -73,6 +73,7 @@ export default async function handle(
 
     return res.status(201).json({
       layout: {
+        id: layout.id,
         name: layout.name,
         holes: savedHoles.map((hole) => {
           return {
