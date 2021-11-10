@@ -12,6 +12,35 @@ info:
 servers:
   - url: http://localhost:3000
 paths:
+  /api/user:
+    post:
+      summary: Create New User
+      description: Create a new user.
+      operationId: post-user
+      responses:
+        "201":
+          description: User created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Missing required information.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Email already taken.
+        "500":
+          description: Internal server error.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUser"
+    parameters: []
+
   /api/users/{userId}:
     parameters:
       - schema:
@@ -37,15 +66,16 @@ paths:
                     $ref: "#/components/schemas/User"
         "404":
           description: User not found.
-
-  /api/user:
-    post:
-      summary: Create New User
-      description: Create a new user.
-      operationId: post-user
+    put:
+      summary: Update existing user
+      tags: []
+      operationId: put-users-userId
+      description: Update user with the matching user ID.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateUser"
       responses:
-        "201":
-          description: User created.
+        "200":
+          description: User updated.
           content:
             application/json:
               schema:
@@ -54,44 +84,32 @@ paths:
                   user:
                     $ref: "#/components/schemas/User"
         "400":
-          description: Missing required information
+          description: Missing required information.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found.
         "409":
           description: Email already taken.
-        "500":
-          description: Internal server error.
-      requestBody:
-        $ref: "#/components/requestBodies/CreateUser"
-    parameters: []
-  /api/users/{userId}/scores:
-    get:
-      summary: Get User's Scores
-      description: Get user's scores
-      operationId: get-user-scores
+    delete:
+      summary: Delete existing user
+      tags: []
+      operationId: delete-users-userId
+      description: Delete user with matching user ID.
       responses:
-        "200":
-          description: Retrieved user's scores.
+        "204":
+          description: User deleted.
+        "404":
+          description: User not found.
+        "409":
+          description: Failed to delete user.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  scoreCards:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/ScoreCard"
-        "404":
-          description: User not found.
-      parameters:
-        - schema:
-            type: integer
-          name: userId
-          in: path
-          required: true
-          description: ID of an existing user.
+                $ref: "#/components/schemas/Error"
+
   /api/users/{userId}/score:
     post:
       summary: Create New Score Card
@@ -124,6 +142,156 @@ paths:
         in: path
         required: true
         description: ID of an existing user.
+
+  /api/users/{userId}/scores:
+    get:
+      summary: Get User's Scores
+      description: Get user's scores.
+      operationId: get-user-scores
+      responses:
+        "200":
+          description: Retrieved user's scores.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreCards:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ScoreCard"
+        "404":
+          description: User not found.
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+          
+  /api/users/{userId}/scores/{scoreId}:
+    get:
+      summary: Get Specified Score
+      description: Get specific user score.
+      operationId: get-user-userId-scores-scoreId
+      responses:
+        "200":
+          description: Retrieved specified score.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreCard:
+                    $ref: "#/components/schemas/ScoreCard"
+        "404":
+          description: User or score not found.
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+        - schema:
+            type: integer
+          name: scoreId
+          in: path
+          required: true
+          description: ID of an existing score.
+    put:
+      summary: Update Specified Score
+      description: Update specific user score.
+      operationId: put-user-userId-scores-scoreId
+      requestBody:
+        $ref: "#/components/requestBodies/CreateScore"
+      responses:
+        "200":
+          description: Updated specified score.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scoreCard:
+                    $ref: "#/components/schemas/ScoreCard"
+        "400":
+          description: Missing required information.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User or score not found.
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+        - schema:
+            type: integer
+          name: scoreId
+          in: path
+          required: true
+          description: ID of an existing score.
+    delete:
+      summary: Delete Specified Score
+      description: Delete specific user score.
+      operationId: delete-user-userId-scores-scoreId
+      responses:
+        "204":
+          description: Deleted specified score.
+        "404":
+          description: User or score not found.
+        "409":
+          description: Failed to delete score.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      parameters:
+        - schema:
+            type: integer
+          name: userId
+          in: path
+          required: true
+          description: ID of an existing user.
+        - schema:
+            type: integer
+          name: scoreId
+          in: path
+          required: true
+          description: ID of an existing score.
+
+  /api/course:
+    post:
+      summary: "Create New Course"
+      operationId: post-api-course
+      description: Create a new course.
+      responses:
+        "201":
+          description: Course created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  course:
+                    $ref: "#/components/schemas/Course"
+        "400":
+          description: Bad data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Course with same name in same area exists.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateCourse"
+
   /api/courses:
     parameters: []
     get:
@@ -168,15 +336,16 @@ paths:
                     $ref: "#/components/schemas/Course"
         "404":
           description: Course not found.
-
-  /api/course:
-    post:
-      summary: "Create New Course"
-      operationId: post-api-course
-      description: Create a new course.
+    put:
+      summary: Update Course Info by Course ID
+      operationId: put-api-course-courseid
+      description: Update the information of the course with the given ID.
+      tags: []
+      requestBody:
+        $ref: "#/components/requestBodies/CreateCourse"
       responses:
-        "201":
-          description: Course created.
+        "200":
+          description: Course updated.
           content:
             application/json:
               schema:
@@ -190,36 +359,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "404":
+          description: Course not found.
         "409":
           description: Course with same name in same area exists.
-      requestBody:
-        $ref: "#/components/requestBodies/CreateCourse"
-  /api/courses/{courseId}/layouts:
-    get:
-      summary: Get Layouts For Course
-      description: Get layouts for the given course.
-      operationId: get-course-layouts
-      parameters:
-        - schema:
-            type: integer
-          name: courseId
-          in: path
-          required: true
-          description: ID of an existing course.
+    delete:
+      summary: Delete Course by Course ID
+      operationId: delete-api-course-courseid
+      description: Delete the course with the given ID.
+      tags: []
       responses:
-        "200":
-          description: Layouts found.
+        "204":
+          description: Course deleted.
+        "404":
+          description: Course not found.
+        "409":
+          description: Failed to delete course.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  layouts:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Layout"
-        "404":
-          description: Course not found.
+                $ref: "#/components/schemas/Error"
+
   /api/courses/{courseId}/layout:
     post:
       summary: Create Layout
@@ -248,6 +408,132 @@ paths:
           description: Layout name already exists for given course.
       requestBody:
         $ref: "#/components/requestBodies/CreateLayout"
+
+  /api/courses/{courseId}/layouts:
+    get:
+      summary: Get Layouts For Course
+      description: Get layouts for the given course.
+      operationId: get-course-layouts
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+      responses:
+        "200":
+          description: Layouts found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layouts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Layout"
+        "404":
+          description: Course not found.
+  
+  /api/courses/{courseId}/layouts/{layoutId}:
+    get:
+      summary: Get Specified Layout
+      description: Get layout with given ID for the given course.
+      operationId: get-course-layout-layoutId
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+        - schema:
+            type: integer
+          name: layoutId
+          in: path
+          required: true
+          description: ID of an existing layout.
+      responses:
+        "200":
+          description: Layout found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    $ref: "#/components/schemas/Layout"
+        "404":
+          description: Course or layout not found.
+    put:
+      summary: Update Specified Layout
+      description: Update layout with given ID for the given course.
+      operationId: put-course-layout-layoutId
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+        - schema:
+            type: integer
+          name: layoutId
+          in: path
+          required: true
+          description: ID of an existing layout.
+      requestBody:
+        $ref: "#/components/requestBodies/CreateLayout"
+      responses:
+        "200":
+          description: Layout updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    $ref: "#/components/schemas/Layout"
+        "400":
+          description: Failed to create layout.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Course or layout not found.
+        "409":
+          description: Layout with same name for course exists.
+    delete:
+      summary: Delete Specified Layout
+      description: Delete layout with given ID for the given course.
+      operationId: delete-course-layout-layoutId
+      parameters:
+        - schema:
+            type: integer
+          name: courseId
+          in: path
+          required: true
+          description: ID of an existing course.
+        - schema:
+            type: integer
+          name: layoutId
+          in: path
+          required: true
+          description: ID of an existing layout.
+      responses:
+        "204":
+          description: Layout deleted.
+        "404":
+          description: Course or layout not found.
+        "409":
+          description: Failed to delete layout.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
   requestBodies:
     CreateUser:
@@ -312,9 +598,9 @@ components:
               courseId:
                 type: integer
                 description: Unique ID for course that was played.
-              layoutName:
-                type: string
-                description: Name of layout for the given course.
+              layoutId:
+                type: integer
+                description: Unique ID of layout for the given course.
               datetime:
                 type: string
                 description: Date time in ISO 8601 date format
@@ -333,7 +619,7 @@ components:
                       description: Number of throws on the given hole.
           example:
             courseId: 1
-            layoutName: Blue tees
+            layoutId: 4
             datetime: "2014-03-12T13:37:27+00:00"
             scores:
               - number: 1
@@ -433,6 +719,9 @@ components:
       type: object
       description: Specific hole configuration.
       properties:
+        id:
+          type: integer
+          description: Unique ID of layout.
         name:
           type: string
           description: Descriptive name of layout, must be unique to the course.
@@ -442,6 +731,7 @@ components:
           items:
             $ref: "#/components/schemas/Hole"
       example:
+        id: 1
         name: Blue tees
         holes:
           - number: 1
@@ -470,12 +760,15 @@ components:
       description: Score card for a user on a given layout.
       type: object
       properties:
+        id:
+          type: integer
+          description: Unique ID of score card.
         courseId:
           type: integer
           description: Unique ID to define the course on which the scores occurred.
-        layoutName:
-          type: string
-          description: Unique name for the layout played on the given course.
+        layoutId:
+          type: integer
+          description: Unique id for the layout played on the given course.
         datetime:
           type: string
           description: Date time in ISO 8601 date format
@@ -493,8 +786,9 @@ components:
                 type: integer
                 description: Number of throws and penalty shots required to get from the tee to having the disc in the basket.
       example:
+        id: 3
         courseId: 1
-        layoutName: Blue Tees
+        layoutId: 4
         datetime: "2014-03-12T13:37:27+00:00"
         scores:
           - number: 1
