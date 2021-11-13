@@ -12,6 +12,29 @@ info:
 servers:
   - url: http://localhost:3000
 paths:
+  /api/login:
+    post:
+      summary: Log into application
+      description: Validate username and password
+      operationId: login-user
+      responses:
+        "200":
+          description: User logged in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: Username of user logged in.
+                  token:
+                    type: string
+                    description: JWT to authenticate user.
+        "400":
+          description: Failed to authenticate user.
+      requestBody:
+        $ref: "#/components/requestBodies/LoginRequest"
   /api/user:
     post:
       summary: Create New User
@@ -536,6 +559,21 @@ paths:
 
 components:
   requestBodies:
+    LoginRequest:
+      description: Fields to log into application.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                description: Email address of existing user
+              password:
+                type: string
+                description: Password associated with user's email.
     CreateUser:
       description: Fields to create a user.
       required: true
@@ -550,6 +588,9 @@ components:
               lastName:
                 type: string
                 description: User's last name.
+              username:
+                type: string
+                description: User's username, must be unique.
               email:
                 type: string
                 format: email
@@ -671,6 +712,9 @@ components:
         lastName:
           type: string
           description: Last name of the user.
+        username:
+          type: string
+          description: Username of the user.
         email:
           type: string
           description: Email address of the user, must be unique.
