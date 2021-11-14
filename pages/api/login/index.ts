@@ -31,8 +31,10 @@ export default async function handle(
 
     const user = await prisma.user.findUnique({ where: { email: email } });
     if (!user || !(await passwordMatchesHash(password, user.passwordHash))) {
+      console.log(`Failed to authenticate user: ${email}`);
       return res.status(400).end();
     }
+    console.log(`Authenticated user ${user.email}`);
 
     const jwt = getJWT({ id: user.id, username: user.username });
 
