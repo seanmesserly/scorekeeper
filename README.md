@@ -10,6 +10,12 @@ First in order to run the development database you will need to add a database u
 DATABASE_URL='file:./dev.db'
 ```
 
+Additionally you must have a secret in order to utilize JWTs for authentiction. To generate such a secret run
+
+```bash
+echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
+```
+
 Then to run the project use the following commands:
 
 ```bash
@@ -26,4 +32,3 @@ npm run dev
 ```bash
 npx redoc-cli bundle -o openapi.html openapi.yaml
 ```
-

@@ -1,10 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
+import { hashPassword } from "../../../lib/util";
 
 interface RequestBody {
   firstName: string;
   lastName: string;
   email: string;
+  username: string;
+  password: string;
 }
 
 function isRequestBody(object: any): boolean {
@@ -14,7 +17,11 @@ function isRequestBody(object: any): boolean {
     object.lastName &&
     typeof object.lastName === "string" &&
     object.email &&
-    typeof object.email === "string"
+    typeof object.email === "string" &&
+    object.username &&
+    typeof object.username === "string" &&
+    object.password &&
+    typeof object.password === "string"
   );
 }
 
@@ -26,17 +33,30 @@ export default async function handle(
     if (!isRequestBody(req.body)) {
       return res.status(400).json({ error: "Invalid input" });
     }
-    const { firstName, lastName, email } = req.body as RequestBody;
+    const { firstName, lastName, email, username, password } =
+      req.body as RequestBody;
 
     const userWithEmail = await prisma.user.findFirst({
       where: { email: email },
     });
-    if (userWithEmail) {
+
+    const userWithUsername = await prisma.user.findFirst({
+      where: { username: username },
+    });
+    if (userWithEmail || userWithUsername) {
       return res.status(409).end();
     }
 
+    const passwordHash = await hashPassword(password);
+
     const user = await prisma.user.create({
-      data: { fName: firstName, lName: lastName, email: email },
+      data: {
+        fName: firstName,
+        lName: lastName,
+        email: email,
+        username: username,
+        passwordHash: passwordHash,
+      },
     });
 
     return res.status(201).json(user);

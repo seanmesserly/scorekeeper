@@ -8,12 +8,14 @@ generator client {
 }
 
 model User {
-  id         Int         @id @default(autoincrement())
-  createdAt  DateTime    @default(now())
-  email      String      @unique
-  fName      String
-  lName      String
-  scoreCards ScoreCard[]
+  id           Int         @id @default(autoincrement())
+  createdAt    DateTime    @default(now())
+  email        String      @unique
+  username     String      @unique
+  passwordHash String
+  fName        String
+  lName        String
+  scoreCards   ScoreCard[]
 }
 
 model Course {
