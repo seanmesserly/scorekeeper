@@ -5,11 +5,11 @@ import { listCourses } from "../lib/util";
 const Searchbar = () => {
   const [inputFocused, setInputFocused] = useState(false);
   const [input, setInput] = useState("");
-  const [courses, setCourses] = useState([])
+  const [courses, setCourses] = useState([]);
 
   useEffect(() => {
-    listCourses().then(courses => setCourses(courses))
-  }, [])
+    listCourses().then((courses) => setCourses(courses));
+  }, []);
 
   return (
     <div className="relative w-full max-w-screen-sm">
@@ -29,7 +29,7 @@ const Searchbar = () => {
           />
         </svg>
         <input
-          onBlur={() => setInputFocused(false)}
+          onBlur={() => setTimeout(() => setInputFocused(false), 100)}
           onFocus={() => setInputFocused(true)}
           type="search"
           onChange={(e) => setInput(e.target.value)}
@@ -45,11 +45,14 @@ const Searchbar = () => {
         {courses
           .filter((course) => course.name.toLowerCase().includes(input))
           .map((course) => (
-            <Link href={`/courses/${course.id}`} key={course.id}>
-              <li className="px-5 py-3 text-gray-600 hover:bg-gray-100 font-semibold cursor-pointer">
+            <li
+              key={course.id}
+              className="px-5 py-3 text-gray-600 hover:bg-gray-100 font-semibold cursor-pointer"
+            >
+              <Link href={`/courses/${course.id}`}>
                 <a>{course.name}</a>
-              </li>
-            </Link>
+              </Link>
+            </li>
           ))}
         <div className="border-t border-gray-300 bg-gray-50 text-center p-5 rounded-b-lg">
           Not seeing it here?
