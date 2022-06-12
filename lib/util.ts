@@ -1,6 +1,3 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-
 export function getNumericId(param: string | string[]): number | null {
   if (param instanceof Array) {
     return null;
@@ -12,23 +9,17 @@ export function getNumericId(param: string | string[]): number | null {
   return id;
 }
 
-export async function hashPassword(password: string): Promise<string> {
-  const saltRounds = 10;
-  const passwordHash = await bcrypt.hash(password, saltRounds);
-  return passwordHash;
-}
-
-export async function passwordMatchesHash(
-  password: string,
-  hash: string
-): Promise<boolean> {
-  return await bcrypt.compare(password, hash);
-}
-
-export interface TokenBody {
+interface CourseListItem {
   id: number;
-  username: string;
+  name: string;
 }
-export function getJWT(body: TokenBody): string {
-  return jwt.sign(body, process.env.JWT_SECRET);
+export async function listCourses(): Promise<Array<CourseListItem>> {
+  const response = await (await fetch("/api/courses")).json();
+  console.log(response);
+  return response.courses.map((course) => {
+    return {
+      id: course.id,
+      name: course.name,
+    };
+  });
 }
