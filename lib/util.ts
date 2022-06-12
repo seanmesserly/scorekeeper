@@ -1,3 +1,5 @@
+import { Course } from "./types";
+
 export function getNumericId(param: string | string[]): number | null {
   if (param instanceof Array) {
     return null;
@@ -7,15 +9,6 @@ export function getNumericId(param: string | string[]): number | null {
     return null;
   }
   return id;
-}
-
-export interface Course {
-  id: number;
-  name: string;
-  lat: number;
-  lon: number;
-  city: string;
-  state: string;
 }
 
 export async function listCourses(): Promise<Array<Course>> {

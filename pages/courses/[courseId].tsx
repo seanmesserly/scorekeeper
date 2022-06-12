@@ -1,7 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import CourseCard from "../../components/CourseCard";
 import Layout from "../../components/Layout";
-import { Course, getCourse } from "../../lib/util";
+import { getCourse } from "../../lib/util";
+import { Course } from "../../lib/types";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -22,7 +24,7 @@ export default function CoursePage() {
   return (
     course && (
       <Layout>
-        <div>{course.name}</div>
+        <CourseCard course={course} />
       </Layout>
     )
   );

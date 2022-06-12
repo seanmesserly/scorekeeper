@@ -1,5 +1,4 @@
 import Avatar from "./Avatar";
-import Searchbar from "./Searchbar";
 import SKLogo from "./SKLogo";
 
 const Header = () => {
