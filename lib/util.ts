@@ -1,3 +1,5 @@
+import { Course } from "./types";
+
 export function getNumericId(param: string | string[]): number | null {
   if (param instanceof Array) {
     return null;
@@ -9,17 +11,32 @@ export function getNumericId(param: string | string[]): number | null {
   return id;
 }
 
-interface CourseListItem {
-  id: number;
-  name: string;
-}
-export async function listCourses(): Promise<Array<CourseListItem>> {
-  const response = await (await fetch("/api/courses")).json();
-  console.log(response);
-  return response.courses.map((course) => {
+export async function listCourses(): Promise<Array<Course>> {
+  const response = await fetch("/api/courses");
+  const data = await response.json();
+  console.log(data);
+  return data.courses.map((course) => {
     return {
       id: course.id,
       name: course.name,
+      lat: course.lat,
+      lon: course.lon,
+      city: course.city,
+      state: course.state,
     };
   });
+}
+
+export async function getCourse(courseId: string): Promise<Course> {
+  const response = await fetch(`/api/courses/${courseId}`);
+  const { course } = await response.json();
+  console.log(course);
+  return {
+    id: course.id,
+    name: course.name,
+    lat: course.lat,
+    lon: course.lon,
+    city: course.city,
+    state: course.state,
+  };
 }
