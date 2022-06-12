@@ -1,10 +1,20 @@
 import { Course, Layout, ScoreCard } from "../lib/types";
+import LayoutPreview from "../components/LayoutPreview";
+import { useState } from "react";
 
 interface Props {
   course: Course;
 }
 
+enum Tab {
+  Layouts,
+  Scores
+}
+
 export default function CourseCard({ course }: Props) {
+  const [tab, setTab] = useState(Tab.Layouts);
+  const selectedTabColors = "bg-purple-400 text-white"
+  const unselectedTabColors = "bg-white text-purple-400"
   const layouts: Array<Layout> = [
     {
       id: 1,
@@ -51,31 +61,29 @@ export default function CourseCard({ course }: Props) {
   ];
   return (
     <div>
-      <header>
-        <h1 className="text-xl">{course.name}</h1>
+      <header className="mb-4">
+        <h1 className="text-xl font-bold">{course.name}</h1>
         <div className="text-md text-gray-400">
           {course.city}, {course.state}
         </div>
       </header>
       <section>
-        <ul>
-          {layouts.map((layout) => {
-            const totalPar = layout.holes
-              .map((hole) => hole.par)
-              .reduce((total, par) => total + par);
-            const totalDistance = layout.holes
-              .map((hole) => hole.distance)
-              .reduce((total, distance) => total + distance);
-            return (
-              <li>
-                {layout.name} | Holes: {layout.holes.length} | Par: {totalPar} |
-                Distance: {totalDistance}
-              </li>
-            );
-          })}
-        </ul>
+        <div className="flex flex-row mb-4">
+          <div className={`w-1/2 max-w-sm border-2 border-purple-400 text-center cursor-pointer ${tab === Tab.Layouts ? selectedTabColors : unselectedTabColors}`}><a onClick={() => setTab(Tab.Layouts)}><div>Info</div></a></div>
+          <div className={`w-1/2 max-w-sm border-2 border-purple-400 text-center cursor-pointer ${tab === Tab.Scores ? selectedTabColors : unselectedTabColors}`}><a onClick={() => setTab(Tab.Scores)}><div>Scores</div></a></div>
+        </div>
       </section>
-      <section>
+      {tab === Tab.Layouts && (<section>
+        <ul>
+          {layouts.map((layout) => (
+              <li>
+                <LayoutPreview layout={layout} />
+              </li>
+            )
+          )}
+        </ul>
+      </section>)}
+      {tab === Tab.Scores && (<section>
         <ul>
           {scores.map((scoreCard) => {
             const date = new Date(scoreCard.datetime);
@@ -110,7 +118,7 @@ export default function CourseCard({ course }: Props) {
             );
           })}
         </ul>
-      </section>
+      </section>)}
       <section className="bg-gray-200">
         Coordinates: {course.lat}, {course.lon}
       </section>
