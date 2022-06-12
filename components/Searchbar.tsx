@@ -1,12 +1,15 @@
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { listCourses } from "../lib/util";
 
 const Searchbar = () => {
   const [inputFocused, setInputFocused] = useState(false);
   const [input, setInput] = useState("");
+  const [courses, setCourses] = useState([])
 
-  // TODO: populate these results with backend db lookups (probably debounced)
-  const results = ["hello world", "api", "what's up?"];
+  useEffect(() => {
+    listCourses().then(courses => setCourses(courses))
+  }, [])
 
   return (
     <div className="relative w-full max-w-screen-sm">
@@ -39,12 +42,12 @@ const Searchbar = () => {
           inputFocused && input.length > 0 ? "" : "hidden"
         }`}
       >
-        {results
-          .filter((result) => result.includes(input))
-          .map((result) => (
-            <Link href={`/course/${result}`} key={result}>
+        {courses
+          .filter((course) => course.name.toLowerCase().includes(input))
+          .map((course) => (
+            <Link href={`/courses/${course.id}`} key={course.id}>
               <li className="px-5 py-3 text-gray-600 hover:bg-gray-100 font-semibold cursor-pointer">
-                <a>{result}</a>
+                <a>{course.name}</a>
               </li>
             </Link>
           ))}

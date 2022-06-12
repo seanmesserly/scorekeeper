@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
-import { hashPassword } from "../../../lib/util";
+import { hashPassword } from "../../../lib/auth";
 
 interface RequestBody {
   firstName: string;

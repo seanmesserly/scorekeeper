@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
-import { passwordMatchesHash, getJWT } from "../../../lib/util";
+import { passwordMatchesHash, getJWT } from "../../../lib/auth";
 
 interface LoginBody {
   email: string;
