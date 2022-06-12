@@ -35,7 +35,7 @@ export default function ScoreCardPreview({
     scoreColor = "bg-green-200";
   }
   return (
-    <div className="border-y-2 py-2">
+    <div className="border-t-2 py-2">
       <section>
         <div className="text-lg">
           <span className="font-bold">{course.name}</span> |{" "}

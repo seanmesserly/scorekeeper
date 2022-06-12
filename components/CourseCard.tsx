@@ -38,6 +38,27 @@ export default function CourseCard({ course }: Props) {
         },
       ],
     },
+    {
+      id: 2,
+      name: "Red Tees",
+      holes: [
+        {
+          number: 1,
+          par: 3,
+          distance: 180,
+        },
+        {
+          number: 2,
+          par: 3,
+          distance: 166,
+        },
+        {
+          number: 3,
+          par: 4,
+          distance: 252,
+        },
+      ],
+    },
   ];
   const scores: Array<ScoreCard> = [
     {
@@ -52,6 +73,25 @@ export default function CourseCard({ course }: Props) {
         {
           number: 2,
           strokes: 4,
+        },
+        {
+          number: 3,
+          strokes: 5,
+        },
+      ],
+    },
+    {
+      courseId: course.id,
+      layoutId: 2,
+      datetime: "2011-11-05T10:48:00.000Z",
+      scores: [
+        {
+          number: 1,
+          strokes: 4,
+        },
+        {
+          number: 2,
+          strokes: 2,
         },
         {
           number: 3,
