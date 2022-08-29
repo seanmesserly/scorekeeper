@@ -2,7 +2,7 @@ import { Course, Layout, ScoreCard } from "../lib/types";
 import LayoutPreview from "../components/LayoutPreview";
 import { useEffect, useState } from "react";
 import ScoreCardPreview from "./ScoreCardPreview";
-import { getLayouts } from "../lib/util";
+import { getLayouts, getScoreCards } from "../lib/util";
 
 interface Props {
   course: Course;
@@ -16,53 +16,18 @@ enum Tab {
 export default function CourseCard({ course }: Props) {
   const [tab, setTab] = useState(Tab.Layouts);
   const [layouts, setLayouts] = useState<Layout[]>([]);
+  const [scores, setScores] = useState<ScoreCard[]>([]);
   const selectedTabColors = "bg-purple-400 text-white";
   const unselectedTabColors = "bg-white text-purple-400";
 
+  // TODO: Get real ID when login is added
+  const userId = "1";
+
   useEffect(() => {
     getLayouts(course.id.toString()).then(setLayouts);
+    getScoreCards(userId).then(setScores);
   }, [course]);
 
-  const scores: Array<ScoreCard> = [
-    {
-      courseId: course.id,
-      layoutId: 1,
-      datetime: "2011-10-05T18:48:00.000Z",
-      scores: [
-        {
-          number: 1,
-          strokes: 3,
-        },
-        {
-          number: 2,
-          strokes: 4,
-        },
-        {
-          number: 3,
-          strokes: 5,
-        },
-      ],
-    },
-    {
-      courseId: course.id,
-      layoutId: 2,
-      datetime: "2011-11-05T10:48:00.000Z",
-      scores: [
-        {
-          number: 1,
-          strokes: 4,
-        },
-        {
-          number: 2,
-          strokes: 2,
-        },
-        {
-          number: 3,
-          strokes: 5,
-        },
-      ],
-    },
-  ];
   return (
     <div>
       <header className="mb-4">
@@ -108,7 +73,11 @@ export default function CourseCard({ course }: Props) {
         <section>
           <ul>
             {scores.map((scoreCard) => (
-              <li>
+              <li
+                key={
+                  scoreCard.courseId + scoreCard.layoutId + scoreCard.datetime
+                }
+              >
                 <ScoreCardPreview
                   scoreCard={scoreCard}
                   layouts={layouts}
