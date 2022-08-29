@@ -5,6 +5,8 @@ import ScoreCardPreview from "./ScoreCardPreview";
 
 interface Props {
   course: Course;
+  layouts: Layout[];
+  scores: ScoreCard[];
 }
 
 enum Tab {
@@ -12,94 +14,11 @@ enum Tab {
   Scores,
 }
 
-export default function CourseCard({ course }: Props) {
+export default function CourseCard({ course, layouts, scores }: Props) {
   const [tab, setTab] = useState(Tab.Layouts);
   const selectedTabColors = "bg-purple-400 text-white";
   const unselectedTabColors = "bg-white text-purple-400";
-  const layouts: Array<Layout> = [
-    {
-      id: 1,
-      name: "Blue Tees",
-      holes: [
-        {
-          number: 1,
-          par: 3,
-          distance: 215,
-        },
-        {
-          number: 2,
-          par: 3,
-          distance: 185,
-        },
-        {
-          number: 3,
-          par: 3,
-          distance: 302,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Red Tees",
-      holes: [
-        {
-          number: 1,
-          par: 3,
-          distance: 180,
-        },
-        {
-          number: 2,
-          par: 3,
-          distance: 166,
-        },
-        {
-          number: 3,
-          par: 4,
-          distance: 252,
-        },
-      ],
-    },
-  ];
-  const scores: Array<ScoreCard> = [
-    {
-      courseId: course.id,
-      layoutId: 1,
-      datetime: "2011-10-05T18:48:00.000Z",
-      scores: [
-        {
-          number: 1,
-          strokes: 3,
-        },
-        {
-          number: 2,
-          strokes: 4,
-        },
-        {
-          number: 3,
-          strokes: 5,
-        },
-      ],
-    },
-    {
-      courseId: course.id,
-      layoutId: 2,
-      datetime: "2011-11-05T10:48:00.000Z",
-      scores: [
-        {
-          number: 1,
-          strokes: 4,
-        },
-        {
-          number: 2,
-          strokes: 2,
-        },
-        {
-          number: 3,
-          strokes: 5,
-        },
-      ],
-    },
-  ];
+
   return (
     <div>
       <header className="mb-4">
@@ -134,7 +53,7 @@ export default function CourseCard({ course }: Props) {
         <section>
           <ul>
             {layouts.map((layout) => (
-              <li>
+              <li key={layout.id}>
                 <LayoutPreview layout={layout} />
               </li>
             ))}
@@ -145,7 +64,11 @@ export default function CourseCard({ course }: Props) {
         <section>
           <ul>
             {scores.map((scoreCard) => (
-              <li>
+              <li
+                key={
+                  scoreCard.courseId + scoreCard.layoutId + scoreCard.datetime
+                }
+              >
                 <ScoreCardPreview
                   scoreCard={scoreCard}
                   layouts={layouts}
