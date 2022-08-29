@@ -1,11 +1,12 @@
 import { Course, Layout, ScoreCard } from "../lib/types";
 import LayoutPreview from "../components/LayoutPreview";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ScoreCardPreview from "./ScoreCardPreview";
-import { getLayouts, getScoreCards } from "../lib/util";
 
 interface Props {
   course: Course;
+  layouts: Layout[];
+  scores: ScoreCard[];
 }
 
 enum Tab {
@@ -13,20 +14,10 @@ enum Tab {
   Scores,
 }
 
-export default function CourseCard({ course }: Props) {
+export default function CourseCard({ course, layouts, scores }: Props) {
   const [tab, setTab] = useState(Tab.Layouts);
-  const [layouts, setLayouts] = useState<Layout[]>([]);
-  const [scores, setScores] = useState<ScoreCard[]>([]);
   const selectedTabColors = "bg-purple-400 text-white";
   const unselectedTabColors = "bg-white text-purple-400";
-
-  // TODO: Get real ID when login is added
-  const userId = "1";
-
-  useEffect(() => {
-    getLayouts(course.id.toString()).then(setLayouts);
-    getScoreCards(userId).then(setScores);
-  }, [course]);
 
   return (
     <div>
@@ -62,7 +53,7 @@ export default function CourseCard({ course }: Props) {
         <section>
           <ul>
             {layouts.map((layout) => (
-              <li>
+              <li key={layout.id}>
                 <LayoutPreview layout={layout} />
               </li>
             ))}
