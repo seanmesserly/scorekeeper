@@ -1,7 +1,8 @@
 import { Course, Layout, ScoreCard } from "../lib/types";
 import LayoutPreview from "../components/LayoutPreview";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ScoreCardPreview from "./ScoreCardPreview";
+import { getLayouts } from "../lib/util";
 
 interface Props {
   course: Course;
@@ -14,52 +15,14 @@ enum Tab {
 
 export default function CourseCard({ course }: Props) {
   const [tab, setTab] = useState(Tab.Layouts);
+  const [layouts, setLayouts] = useState<Layout[]>([]);
   const selectedTabColors = "bg-purple-400 text-white";
   const unselectedTabColors = "bg-white text-purple-400";
-  const layouts: Array<Layout> = [
-    {
-      id: 1,
-      name: "Blue Tees",
-      holes: [
-        {
-          number: 1,
-          par: 3,
-          distance: 215,
-        },
-        {
-          number: 2,
-          par: 3,
-          distance: 185,
-        },
-        {
-          number: 3,
-          par: 3,
-          distance: 302,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Red Tees",
-      holes: [
-        {
-          number: 1,
-          par: 3,
-          distance: 180,
-        },
-        {
-          number: 2,
-          par: 3,
-          distance: 166,
-        },
-        {
-          number: 3,
-          par: 4,
-          distance: 252,
-        },
-      ],
-    },
-  ];
+
+  useEffect(() => {
+    getLayouts(course.id.toString()).then(setLayouts);
+  }, [course]);
+
   const scores: Array<ScoreCard> = [
     {
       courseId: course.id,

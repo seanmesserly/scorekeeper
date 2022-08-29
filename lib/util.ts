@@ -1,4 +1,4 @@
-import { Course } from "./types";
+import { Course, Layout } from "./types";
 
 export function getNumericId(param: string | string[]): number | null {
   if (param instanceof Array) {
@@ -39,4 +39,11 @@ export async function getCourse(courseId: string): Promise<Course> {
     city: course.city,
     state: course.state,
   };
+}
+
+export async function getLayouts(courseId: string): Promise<Layout[]> {
+  const response = await fetch(`/api/courses/${courseId}/layouts`);
+  const { layouts } = await response.json();
+  console.log({ layouts });
+  return layouts;
 }
