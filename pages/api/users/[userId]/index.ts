@@ -8,13 +8,14 @@ interface PutBody {
   email: string;
 }
 
-function isPutBody(object: any): boolean {
+function isPutBody(object: unknown): object is PutBody {
   return (
-    object.firstName &&
+    typeof object === "object" &&
+    "firstName" in object &&
     typeof object.firstName === "string" &&
-    object.lastName &&
+    "lastName" in object &&
     typeof object.lastName === "string" &&
-    object.email &&
+    "email" in object &&
     typeof object.email === "string"
   );
 }
@@ -43,7 +44,7 @@ export default async function handle(
     if (!isPutBody(req.body)) {
       return res.status(400).json({ error: "Invalid input" });
     }
-    const { firstName, lastName, email } = req.body as PutBody;
+    const { firstName, lastName, email } = req.body;
 
     const userWithEmail = await prisma.user.findFirst({
       where: { email: email },

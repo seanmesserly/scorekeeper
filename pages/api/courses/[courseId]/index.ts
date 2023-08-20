@@ -10,17 +10,18 @@ interface PutBody {
   state: string;
 }
 
-function isPutBody(object: any): boolean {
+function isPutBody(object: unknown): object is PutBody {
   return (
-    object.name &&
+    typeof object === "object" &&
+    "name" in object &&
     typeof object.name === "string" &&
-    object.lat &&
+    "lat" in object &&
     typeof object.lat === "number" &&
-    object.lon &&
+    "lon" in object &&
     typeof object.lon === "number" &&
-    object.city &&
+    "city" in object &&
     typeof object.city === "string" &&
-    object.state &&
+    "state" in object &&
     typeof object.state === "string"
   );
 }
@@ -61,7 +62,7 @@ export default async function handle(
     if (!isPutBody(req.body)) {
       return res.status(400).json({ error: "Invalid input" });
     }
-    const { name, lat, lon, city, state } = req.body as PutBody;
+    const { name, lat, lon, city, state } = req.body;
 
     const sameLocation = await prisma.location.findFirst({
       where: { city: city, state: state },

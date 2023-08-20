@@ -54,3 +54,9 @@ export async function getScoreCards(userId: string): Promise<ScoreCard[]> {
   console.log({ scoreCards });
   return scoreCards;
 }
+
+// isValidISOString detmines whether the string represents a valid ISO datetime string.
+export const isValidISOString = (datetime: string): boolean => {
+  const date = new Date(datetime);
+  return !isNaN(date.getTime()) && datetime === date.toISOString();
+}
