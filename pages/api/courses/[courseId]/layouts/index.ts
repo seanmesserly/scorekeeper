@@ -9,7 +9,7 @@ export default async function handle(
 ) {
   const courseId = getNumericId(req.query.courseId);
   if (!courseId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
@@ -18,7 +18,7 @@ export default async function handle(
         where: { id: courseId },
       });
       if (!course) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const layouts = await prisma.layout.findMany({
         where: { courseId: courseId },
@@ -42,12 +42,12 @@ export default async function handle(
           };
         })
       );
-      return res.status(200).json({
+      return res.status(http.Statuses.OK).json({
         layouts: layoutObjects,
       });
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

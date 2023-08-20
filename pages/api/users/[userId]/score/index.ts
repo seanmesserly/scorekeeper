@@ -47,18 +47,20 @@ export default async function handle(
 ) {
   const userId = getNumericId(req.query.userId);
   if (!userId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
     case http.Methods.Post: {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       if (!isRequestBody(req.body)) {
-        return res.status(400).json({ error: "Invalid input" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Invalid input" });
       }
 
       const { courseId, layoutId, datetime, scores } = req.body;
@@ -67,7 +69,9 @@ export default async function handle(
         where: { id: layoutId },
       });
       if (!layout) {
-        return res.status(400).json({ error: "Layout not found" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Layout not found" });
       }
 
       const scoreObjects = await Promise.all(
@@ -94,7 +98,7 @@ export default async function handle(
         },
       });
 
-      return res.status(201).json({
+      return res.status(http.Statuses.Created).json({
         scoreCard: {
           courseId: layout.courseId,
           layoutId: layout.id,
@@ -104,7 +108,7 @@ export default async function handle(
       });
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

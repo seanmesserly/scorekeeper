@@ -27,25 +27,27 @@ export default async function handle(
 ) {
   const userId = getNumericId(req.query.userId);
   if (!userId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
     case http.Methods.Get: {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (user) {
-        return res.status(200).json(user);
+        return res.status(http.Statuses.OK).json(user);
       }
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
     case http.Methods.Put: {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       if (!isPutBody(req.body)) {
-        return res.status(400).json({ error: "Invalid input" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Invalid input" });
       }
       const { firstName, lastName, email } = req.body;
 
@@ -53,7 +55,7 @@ export default async function handle(
         where: { email: email },
       });
       if (userWithEmail && userWithEmail.id !== user.id) {
-        return res.status(409).end();
+        return res.status(http.Statuses.Conflict).end();
       }
 
       const updatedUser = await prisma.user.update({
@@ -61,7 +63,7 @@ export default async function handle(
         data: { fName: firstName, lName: lastName, email: email },
       });
       if (updatedUser) {
-        return res.status(200).json({
+        return res.status(http.Statuses.OK).json({
           user: {
             id: updatedUser.id,
             firstName: updatedUser.fName,
@@ -75,18 +77,18 @@ export default async function handle(
     case http.Methods.Delete: {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       try {
         await prisma.user.delete({ where: { id: user.id } });
-        return res.status(204).end();
+        return res.status(http.Statuses.NoContent).end();
       } catch (err: any) {
-        return res.status(409).json({ error: err });
+        return res.status(http.Statuses.Conflict).json({ error: err });
       }
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

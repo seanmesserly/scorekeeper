@@ -33,7 +33,7 @@ export default async function handle(
 ) {
   const courseId = getNumericId(req.query.courseId);
   if (!courseId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
@@ -45,7 +45,7 @@ export default async function handle(
         const location = await prisma.location.findUnique({
           where: { id: course.locationId },
         });
-        return res.status(200).json({
+        return res.status(http.Statuses.OK).json({
           course: {
             id: course.id,
             name: course.name,
@@ -56,18 +56,20 @@ export default async function handle(
           },
         });
       }
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
     case http.Methods.Put: {
       const course = await prisma.course.findUnique({
         where: { id: courseId },
       });
       if (!course) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       if (!isPutBody(req.body)) {
-        return res.status(400).json({ error: "Invalid input" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Invalid input" });
       }
       const { name, lat, lon, city, state } = req.body;
 
@@ -102,7 +104,7 @@ export default async function handle(
         },
       });
       if (updatedCourse) {
-        return res.status(200).json({
+        return res.status(http.Statuses.OK).json({
           user: {
             id: updatedCourse.id,
             name: updatedCourse.name,
@@ -119,18 +121,18 @@ export default async function handle(
         where: { id: courseId },
       });
       if (!course) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       try {
         await prisma.course.delete({ where: { id: course.id } });
-        return res.status(204).end();
+        return res.status(http.Statuses.NoContent).end();
       } catch (err: any) {
-        return res.status(409).json({ error: err });
+        return res.status(http.Statuses.Conflict).json({ error: err });
       }
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

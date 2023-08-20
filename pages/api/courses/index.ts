@@ -24,12 +24,12 @@ export default async function handle(
           };
         })
       );
-      return res.status(200).json({
+      return res.status(http.Statuses.OK).json({
         courses: courseObjects,
       });
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

@@ -9,14 +9,14 @@ export default async function handle(
 ) {
   const userId = getNumericId(req.query.userId);
   if (!userId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
     case http.Methods.Get: {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const scores = await prisma.scoreCard.findMany({
         where: { userId: user.id },
@@ -26,7 +26,7 @@ export default async function handle(
         },
       });
 
-      return res.status(200).json({
+      return res.status(http.Statuses.OK).json({
         scoreCards: scores.map((score) => {
           return {
             courseId: score.layout.courseId,
@@ -43,7 +43,7 @@ export default async function handle(
       });
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

@@ -33,7 +33,9 @@ export default async function handle(
   switch (req.method) {
     case http.Methods.Get: {
       if (!isRequestBody(req.body)) {
-        return res.status(400).json({ error: "Invalid fields" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Invalid fields" });
       }
 
       const { name, lat, lon, city, state } = req.body;
@@ -47,7 +49,7 @@ export default async function handle(
         });
         if (courseWithName) {
           return res
-            .status(409)
+            .status(http.Statuses.Conflict)
             .json({ error: "Course with same name in same location exists" });
         }
       }
@@ -60,7 +62,7 @@ export default async function handle(
         data: { name: name, locationId: location.id },
       });
 
-      return res.status(201).json({
+      return res.status(http.Statuses.Created).json({
         course: {
           name: course.name,
           id: course.id,
@@ -72,7 +74,7 @@ export default async function handle(
       });
     }
     default: {
-      res.status(404).end();
+      res.status(http.Statuses.NotFound).end();
     }
   }
 }
