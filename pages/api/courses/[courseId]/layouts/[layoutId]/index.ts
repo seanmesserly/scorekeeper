@@ -43,11 +43,11 @@ export default async function handle(
 ) {
   const courseId = getNumericId(req.query.courseId);
   if (!courseId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
   const layoutId = getNumericId(req.query.layoutId);
   if (!layoutId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
@@ -56,17 +56,17 @@ export default async function handle(
         where: { id: courseId },
       });
       if (!course) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const layout = await prisma.layout.findUnique({
         where: { id: layoutId },
         include: { holes: true },
       });
       if (!layout) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
-      return res.status(200).json({
+      return res.status(http.Statuses.OK).json({
         layout: {
           id: layout.id,
           name: layout.name,
@@ -85,18 +85,20 @@ export default async function handle(
         where: { id: courseId },
       });
       if (!course) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const layout = await prisma.layout.findUnique({
         where: { id: layoutId },
         include: { holes: true },
       });
       if (!layout) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       if (!isPutBody(req.body)) {
-        return res.status(400).json({ error: "Invalid input" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Invalid input" });
       }
 
       const { name, holes } = req.body;
@@ -115,7 +117,7 @@ export default async function handle(
         where: { layoutId: layout.id },
       });
 
-      return res.status(200).json({
+      return res.status(http.Statuses.OK).json({
         layout: {
           id: updatedLayout.id,
           name: updatedLayout.name,
@@ -134,22 +136,22 @@ export default async function handle(
         where: { id: courseId },
       });
       if (!course) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const layout = await prisma.layout.findUnique({
         where: { id: layoutId },
         include: { holes: true },
       });
       if (!layout) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       await prisma.layout.delete({ where: { id: layout.id } });
 
-      return res.status(204).end();
+      return res.status(http.Statuses.NoContent).end();
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

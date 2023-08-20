@@ -47,12 +47,12 @@ export default async function handle(
 ) {
   const userId = getNumericId(req.query.userId);
   if (!userId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   const scoreId = getNumericId(req.query.scoreId);
   if (!scoreId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
@@ -61,17 +61,17 @@ export default async function handle(
         where: { id: userId },
       });
       if (!user) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const scoreCard = await prisma.scoreCard.findUnique({
         where: { id: scoreId },
         include: { scores: { include: { hole: true } }, layout: true },
       });
       if (!scoreCard) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
-      return res.status(200).json({
+      return res.status(http.Statuses.OK).json({
         scoreCard: {
           id: scoreCard.id,
           courseId: scoreCard.layout.courseId,
@@ -91,13 +91,13 @@ export default async function handle(
         where: { id: userId },
       });
       if (!user) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const scoreCard = await prisma.scoreCard.findUnique({
         where: { id: scoreId },
       });
       if (!scoreCard) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       if (!isPutBody(req.body)) {
@@ -112,7 +112,9 @@ export default async function handle(
         where: { id: layoutId },
       });
       if (!layout) {
-        return res.status(400).json({ error: "Layout not found" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Layout not found" });
       }
 
       const scoreObjects = await Promise.all(
@@ -140,7 +142,7 @@ export default async function handle(
         },
       });
 
-      return res.status(201).json({
+      return res.status(http.Statuses.Created).json({
         scoreCard: {
           courseId: layout.courseId,
           layoutId: layout.id,
@@ -154,21 +156,21 @@ export default async function handle(
         where: { id: userId },
       });
       if (!user) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
       const scoreCard = await prisma.scoreCard.findUnique({
         where: { id: scoreId },
       });
       if (!scoreCard) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       await prisma.scoreCard.delete({ where: { id: scoreId } });
 
-      return res.status(204).end();
+      return res.status(http.Statuses.NoContent).end();
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }

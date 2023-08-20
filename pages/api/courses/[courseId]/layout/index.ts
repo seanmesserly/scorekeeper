@@ -43,7 +43,7 @@ export default async function handle(
 ) {
   const courseId = getNumericId(req.query.courseId);
   if (!courseId) {
-    return res.status(404).end();
+    return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
@@ -52,11 +52,13 @@ export default async function handle(
         where: { id: courseId },
       });
       if (!course) {
-        return res.status(404).end();
+        return res.status(http.Statuses.NotFound).end();
       }
 
       if (!isRequestBody(req.body)) {
-        return res.status(400).json({ error: "Invalid input" });
+        return res
+          .status(http.Statuses.BadRequest)
+          .json({ error: "Invalid input" });
       }
 
       const { name, holes } = req.body;
@@ -75,7 +77,7 @@ export default async function handle(
         where: { layoutId: layout.id },
       });
 
-      return res.status(201).json({
+      return res.status(http.Statuses.Created).json({
         layout: {
           id: layout.id,
           name: layout.name,
@@ -90,7 +92,7 @@ export default async function handle(
       });
     }
     default: {
-      return res.status(404).end();
+      return res.status(http.Statuses.NotFound).end();
     }
   }
 }
