@@ -7,12 +7,13 @@ interface LoginBody {
   password: string;
 }
 
-function isLoginBody(obj: any): boolean {
+function isLoginBody(object: unknown): object is LoginBody {
   return (
-    obj.email &&
-    typeof obj.email === "string" &&
-    obj.password &&
-    typeof obj.password === "string"
+    typeof object === "object" &&
+    "email" in object &&
+    typeof object.email === "string" &&
+    "password" in object &&
+    typeof object.password === "string"
   );
 }
 
@@ -27,7 +28,7 @@ export default async function handle(
       });
     }
 
-    const { email, password } = req.body as LoginBody;
+    const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email: email } });
     if (!user || !(await passwordMatchesHash(password, user.passwordHash))) {

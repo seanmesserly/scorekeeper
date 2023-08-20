@@ -10,17 +10,18 @@ interface RequestBody {
   password: string;
 }
 
-function isRequestBody(object: any): boolean {
+function isRequestBody(object: unknown): object is RequestBody {
   return (
-    object.firstName &&
+    typeof object === "object" &&
+    "firstName" in object &&
     typeof object.firstName === "string" &&
-    object.lastName &&
+    "lastName" in object &&
     typeof object.lastName === "string" &&
-    object.email &&
+    "email" in object &&
     typeof object.email === "string" &&
-    object.username &&
+    "username" in object &&
     typeof object.username === "string" &&
-    object.password &&
+    "password" in object &&
     typeof object.password === "string"
   );
 }
@@ -33,8 +34,7 @@ export default async function handle(
     if (!isRequestBody(req.body)) {
       return res.status(400).json({ error: "Invalid input" });
     }
-    const { firstName, lastName, email, username, password } =
-      req.body as RequestBody;
+    const { firstName, lastName, email, username, password } = req.body;
 
     const userWithEmail = await prisma.user.findFirst({
       where: { email: email },

@@ -1,17 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../../lib/prisma";
-import { getNumericId } from "../../../../../lib/util";
+import { getNumericId, isValidISOString } from "../../../../../lib/util";
 
 interface ScoreSchema {
   number: number;
   strokes: number;
 }
 
-function isScore(object: any): boolean {
+function isScore(object: unknown): object is ScoreSchema {
   return (
-    object.number &&
+    typeof object === "object" &&
+    "number" in object &&
     typeof object.number === "number" &&
-    object.strokes &&
+    "strokes" in object &&
     typeof object.strokes === "number"
   );
 }
@@ -23,25 +24,20 @@ interface RequestBody {
   scores: Array<ScoreSchema>;
 }
 
-function isRequestBody(object: any): boolean {
-  if (
-    !object.courseId ||
-    typeof object.courseId !== "number" ||
-    !object.layoutId ||
-    typeof object.layoutId !== "number" ||
-    !object.datetime ||
-    typeof object.datetime !== "string" ||
-    !(object.scores instanceof Array) ||
-    !object.scores.every((score) => isScore(score))
-  ) {
-    return false;
-  }
-  const date = new Date(object.datetime);
-  if (isNaN(date.getTime()) || object.datetime !== date.toISOString()) {
-    return false;
-  }
-
-  return true;
+function isRequestBody(object: unknown): object is RequestBody {
+  return (
+    typeof object === "object" &&
+    "courseId" in object &&
+    typeof object.courseId === "number" &&
+    "layoutId" in object &&
+    typeof object.layoutId === "number" &&
+    "datetime" in object &&
+    typeof object.datetime === "string" &&
+    isValidISOString(object.datetime) &&
+    "scores" in object &&
+    object.scores instanceof Array &&
+    object.scores.every((score) => isScore(score))
+  );
 }
 
 export default async function handle(
@@ -63,7 +59,7 @@ export default async function handle(
       return res.status(400).json({ error: "Invalid input" });
     }
 
-    const { courseId, layoutId, datetime, scores } = req.body as RequestBody;
+    const { courseId, layoutId, datetime, scores } = req.body;
 
     const layout = await prisma.layout.findUnique({
       where: { id: layoutId },

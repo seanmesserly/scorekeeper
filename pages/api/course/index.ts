@@ -9,17 +9,18 @@ interface RequestBody {
   state: string;
 }
 
-function isRequestBody(object: any): boolean {
+function isRequestBody(object: unknown): object is RequestBody {
   return (
-    object.name &&
+    typeof object === "object" &&
+    "name" in object &&
     typeof object.name === "string" &&
-    object.lat &&
+    "lat" in object &&
     typeof object.lat === "number" &&
-    object.lon &&
+    "lon" in object &&
     typeof object.lon === "number" &&
-    object.city &&
+    "city" in object &&
     typeof object.city === "string" &&
-    object.state &&
+    "state" in object &&
     typeof object.state === "string"
   );
 }
@@ -33,7 +34,7 @@ export default async function handle(
       return res.status(400).json({ error: "Invalid fields" });
     }
 
-    const { name, lat, lon, city, state } = req.body as RequestBody;
+    const { name, lat, lon, city, state } = req.body;
 
     const sameLocation = await prisma.location.findFirst({
       where: { city: city, state: state },

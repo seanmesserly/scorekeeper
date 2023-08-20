@@ -8,13 +8,14 @@ interface HoleSchema {
   distance: number;
 }
 
-function isHole(object: any): boolean {
+function isHole(object: unknown): object is HoleSchema {
   return (
-    object.number &&
+    typeof object === "object" &&
+    "number" in object &&
     typeof object.number === "number" &&
-    object.par &&
+    "par" in object &&
     typeof object.par === "number" &&
-    object.distance &&
+    "distance" in object &&
     typeof object.distance === "number"
   );
 }
@@ -24,11 +25,12 @@ interface RequestBody {
   holes: Array<HoleSchema>;
 }
 
-function isRequestBody(object: any): boolean {
+function isRequestBody(object: unknown): object is RequestBody {
   return (
-    object.name &&
+    typeof object === "object" &&
+    "name" in object &&
     typeof object.name === "string" &&
-    object.holes &&
+    "holes" in object &&
     object.holes instanceof Array &&
     object.holes.every((hole) => isHole(hole))
   );
@@ -55,7 +57,7 @@ export default async function handle(
       return res.status(400).json({ error: "Invalid input" });
     }
 
-    const { name, holes } = req.body as RequestBody;
+    const { name, holes } = req.body;
 
     const layout = await prisma.layout.create({
       data: {
