@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../../../lib/prisma";
 import { getNumericId } from "../../../../../../lib/util";
 import * as http from "../../../../../../lib/http";
+import * as queries from "../../../../../../lib/queries";
 
 interface HoleSchema {
   number: number;
@@ -43,56 +43,62 @@ export default async function handle(
 ) {
   const courseId = getNumericId(req.query.courseId);
   if (!courseId) {
+    console.log(
+      `Course ID ${req.query.courseId} could not be parsed as number`
+    );
     return res.status(http.Statuses.NotFound).end();
   }
   const layoutId = getNumericId(req.query.layoutId);
   if (!layoutId) {
+    console.log(
+      `Layout ID ${req.query.layoutId} could not be parsed as number`
+    );
     return res.status(http.Statuses.NotFound).end();
+  }
+
+  try {
+    if (!(await queries.courseExistsByID(courseId))) {
+      console.log(`Course ${courseId} does not exist`);
+      return res.status(http.Statuses.NotFound).end();
+    }
+  } catch (err) {
+    console.error(`Failed to determine if course ${courseId} exists`, err);
+    return res
+      .status(http.Statuses.InternalServerError)
+      .json({ error: "failed to determine if course exists" });
   }
 
   switch (req.method) {
     case http.Methods.Get: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (!course) {
-        return res.status(http.Statuses.NotFound).end();
-      }
-      const layout = await prisma.layout.findUnique({
-        where: { id: layoutId },
-        include: { holes: true },
-      });
-      if (!layout) {
-        return res.status(http.Statuses.NotFound).end();
-      }
+      try {
+        const layout = await queries.getLayout(layoutId);
 
-      return res.status(http.Statuses.OK).json({
-        layout: {
-          id: layout.id,
-          name: layout.name,
-          holes: layout.holes.map((hole) => {
-            return {
-              number: hole.number,
-              par: hole.par,
-              distance: hole.distance,
-            };
-          }),
-        },
-      });
+        if (!layout) {
+          console.log(`Failed to find layout ${layoutId}`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+
+        console.log(`Found layout ${layoutId}`);
+        return res.status(http.Statuses.OK).json({ layout });
+      } catch (err) {
+        console.error(`failed to find layout ${layoutId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to find layout" });
+      }
     }
     case http.Methods.Put: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (!course) {
-        return res.status(http.Statuses.NotFound).end();
-      }
-      const layout = await prisma.layout.findUnique({
-        where: { id: layoutId },
-        include: { holes: true },
-      });
-      if (!layout) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        const layout = await queries.getLayout(layoutId);
+        if (!layout) {
+          console.log(`Failed to find layout ${layoutId}`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+      } catch (err) {
+        console.error(`Failed to get layout ${layoutId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to find layout" });
       }
 
       if (!isPutBody(req.body)) {
@@ -103,54 +109,46 @@ export default async function handle(
 
       const { name, holes } = req.body;
 
-      const updatedLayout = await prisma.layout.update({
-        where: { id: layout.id },
-        data: {
-          name: name,
-          holes: {
-            create: holes,
-          },
-        },
-      });
+      try {
+        const updatedLayout = await queries.updateLayout(layoutId, name, holes);
 
-      const savedHoles = await prisma.hole.findMany({
-        where: { layoutId: layout.id },
-      });
-
-      return res.status(http.Statuses.OK).json({
-        layout: {
-          id: updatedLayout.id,
-          name: updatedLayout.name,
-          holes: savedHoles.map((hole) => {
-            return {
-              par: hole.par,
-              distance: hole.distance,
-              number: hole.number,
-            };
-          }),
-        },
-      });
+        console.log(`Updated layout ${layoutId}`);
+        return res.status(http.Statuses.OK).json({ layout: updatedLayout });
+      } catch (err) {
+        console.error(`failed to update layout ${layoutId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to update layout" });
+      }
     }
     case http.Methods.Delete: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (!course) {
-        return res.status(http.Statuses.NotFound).end();
-      }
-      const layout = await prisma.layout.findUnique({
-        where: { id: layoutId },
-        include: { holes: true },
-      });
-      if (!layout) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        const layout = await queries.getLayout(layoutId);
+        if (!layout) {
+          console.log(`Failed to find layout ${layoutId}`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+      } catch (err) {
+        console.error(`Failed to get layout ${layoutId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to find layout" });
       }
 
-      await prisma.layout.delete({ where: { id: layout.id } });
+      try {
+        await queries.deleteLayout(layoutId);
 
-      return res.status(http.Statuses.NoContent).end();
+        console.log(`Deleted layout ${layoutId}`);
+        return res.status(http.Statuses.NoContent).end();
+      } catch (err) {
+        console.error(`Failed to delete layout ${layoutId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to delete layout" });
+      }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }

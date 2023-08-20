@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../lib/prisma";
 import * as http from "../../../lib/http";
+import * as queries from "../../../lib/queries";
 
 interface RequestBody {
   name: string;
@@ -40,40 +40,40 @@ export default async function handle(
 
       const { name, lat, lon, city, state } = req.body;
 
-      const sameLocation = await prisma.location.findFirst({
-        where: { city: city, state: state },
-      });
-      if (sameLocation) {
-        const courseWithName = await prisma.course.findFirst({
-          where: { name: name, location: sameLocation },
-        });
-        if (courseWithName) {
+      try {
+        if (await queries.courseExists(name, city, state)) {
+          console.log(`Course ${name} already exists in ${city}, ${state}`);
           return res
             .status(http.Statuses.Conflict)
             .json({ error: "Course with same name in same location exists" });
         }
+      } catch (err) {
+        console.error(
+          `Failed to determine if course ${name} in ${city}, ${state} existed`,
+          err
+        );
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Failed to determine if course existed" });
       }
 
-      const location = await prisma.location.create({
-        data: { lat: lat, lon: lon, city: city, state: state },
-      });
+      try {
+        const course = await queries.createCourse(name, city, state, lat, lon);
 
-      const course = await prisma.course.create({
-        data: { name: name, locationId: location.id },
-      });
-
-      return res.status(http.Statuses.Created).json({
-        course: {
-          name: course.name,
-          id: course.id,
-          lat: location.lat,
-          lon: location.lon,
-          city: location.city,
-          state: location.state,
-        },
-      });
+        console.log(`Course ${name} created in ${city}, ${state}`);
+        return res.status(http.Statuses.Created).json({ course });
+      } catch (err) {
+        console.error(
+          `Failed to create course ${name} in ${city}, ${state}`,
+          err
+        );
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Failed to create course" });
+      }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       res.status(http.Statuses.NotFound).end();
     }
   }
