@@ -19,14 +19,30 @@ export interface Hole {
   distance: number;
 }
 
+export interface UserAuth {
+  id: number;
+  username: string;
+  email: string;
+  passwordHash: string;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface Score {
   number: number;
   strokes: number;
 }
 
 export interface ScoreCard {
-  courseId: number;
-  layoutId: number;
+  id: number;
   datetime: string;
+  courseID: number;
+  layoutID: number;
   scores: Array<Score>;
 }

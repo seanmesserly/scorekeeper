@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../../lib/prisma";
 import { getNumericId } from "../../../../../lib/util";
 import * as http from "../../../../../lib/http";
+import * as queries from "../../../../../lib/queries";
 
 export default async function handle(
   req: NextApiRequest,
@@ -14,39 +14,32 @@ export default async function handle(
 
   switch (req.method) {
     case http.Methods.Get: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (!course) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        if (!(await queries.courseExistsByID(courseId))) {
+          console.log(`Course ${courseId} does not exist`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+      } catch (err) {
+        console.error(`Failed to determine if course ${courseId} exists`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to determine if course exists" });
       }
-      const layouts = await prisma.layout.findMany({
-        where: { courseId: courseId },
-      });
 
-      const layoutObjects = await Promise.all(
-        layouts.map(async (layout) => {
-          const holes = await prisma.hole.findMany({
-            where: { layoutId: layout.id },
-          });
-          return {
-            id: layout.id,
-            name: layout.name,
-            holes: holes.map((hole) => {
-              return {
-                number: hole.number,
-                par: hole.par,
-                distance: hole.distance,
-              };
-            }),
-          };
-        })
-      );
-      return res.status(http.Statuses.OK).json({
-        layouts: layoutObjects,
-      });
+      try {
+        const layouts = await queries.getLayouts(courseId);
+
+        console.log(`found layouts for course ${courseId}`);
+        return res.status(http.Statuses.OK).json({ layouts });
+      } catch (err) {
+        console.error(`failed to get layouts for course ${courseId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to find layouts for course" });
+      }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }

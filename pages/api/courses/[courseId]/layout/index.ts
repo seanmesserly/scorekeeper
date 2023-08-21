@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../../lib/prisma";
 import { getNumericId } from "../../../../../lib/util";
 import * as http from "../../../../../lib/http";
+import * as queries from "../../../../../lib/queries";
 
 interface HoleSchema {
   number: number;
@@ -43,19 +43,28 @@ export default async function handle(
 ) {
   const courseId = getNumericId(req.query.courseId);
   if (!courseId) {
+    console.log(
+      `Course ID ${req.query.courseId} could not be parsed as number`
+    );
     return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
     case http.Methods.Post: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (!course) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        if (!(await queries.courseExistsByID(courseId))) {
+          console.log(`Course with ID ${courseId} not found`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+      } catch (err) {
+        console.error(`Failed to determine if course ${courseId} exists`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to determine if course exists" });
       }
 
       if (!isRequestBody(req.body)) {
+        console.log("Failed to parse request body", req.body);
         return res
           .status(http.Statuses.BadRequest)
           .json({ error: "Invalid input" });
@@ -63,35 +72,40 @@ export default async function handle(
 
       const { name, holes } = req.body;
 
-      const layout = await prisma.layout.create({
-        data: {
-          name: name,
-          courseId: courseId,
-          holes: {
-            create: holes,
-          },
-        },
-      });
+      try {
+        if (await queries.layoutExists(name, courseId)) {
+          console.log(`Layout ${name} for course ${courseId} already exists`);
+          return res.status(http.Statuses.Conflict).json({
+            error: "Layout with same name already exists for this course",
+          });
+        }
+      } catch (err) {
+        console.error(
+          `Failed to determine if layout ${name} exists for course ${courseId}`,
+          err
+        );
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to determine if layout is duplicate" });
+      }
 
-      const savedHoles = await prisma.hole.findMany({
-        where: { layoutId: layout.id },
-      });
+      try {
+        const layout = await queries.createLayout(name, courseId, holes);
 
-      return res.status(http.Statuses.Created).json({
-        layout: {
-          id: layout.id,
-          name: layout.name,
-          holes: savedHoles.map((hole) => {
-            return {
-              par: hole.par,
-              distance: hole.distance,
-              number: hole.number,
-            };
-          }),
-        },
-      });
+        console.log(`Layout ${name} created for course ${courseId}`);
+        return res.status(http.Statuses.Created).json({ layout });
+      } catch (err) {
+        console.error(
+          `Failed to create layout ${name} in course ${courseId}`,
+          err
+        );
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to create layout" });
+      }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }

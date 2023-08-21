@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../lib/prisma";
 import * as http from "../../../lib/http";
+import * as queries from "../../../lib/queries";
 
 export default async function handle(
   req: NextApiRequest,
@@ -8,27 +8,20 @@ export default async function handle(
 ) {
   switch (req.method) {
     case http.Methods.Get: {
-      const courses = await prisma.course.findMany({});
-      const courseObjects = await Promise.all(
-        courses.map(async (course) => {
-          const location = await prisma.location.findUnique({
-            where: { id: course.locationId },
-          });
-          return {
-            id: course.id,
-            name: course.name,
-            lat: location.lat,
-            lon: location.lon,
-            state: location.state,
-            city: location.city,
-          };
-        })
-      );
-      return res.status(http.Statuses.OK).json({
-        courses: courseObjects,
-      });
+      try {
+        const courses = await queries.getCourses();
+
+        console.log("Retrieved courses");
+        return res.status(http.Statuses.OK).json({ courses });
+      } catch (err) {
+        console.error("Failed to get courses", err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to list courses" });
+      }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }

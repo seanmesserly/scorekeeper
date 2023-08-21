@@ -45,13 +45,12 @@ model Layout {
 }
 
 model Hole {
-  id       Int     @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   number   Int
   par      Int
   distance Int
-  layout   Layout  @relation(fields: [layoutId], references: [id])
+  layout   Layout @relation(fields: [layoutId], references: [id])
   layoutId Int
-  scores   Score[]
 }
 
 model ScoreCard {
@@ -66,9 +65,8 @@ model ScoreCard {
 
 model Score {
   id          Int       @id @default(autoincrement())
+  number      Int
   strokes     Int
-  hole        Hole      @relation(fields: [holeId], references: [id])
-  holeId      Int
   scoreCard   ScoreCard @relation(fields: [scoreCardId], references: [id])
   scoreCardId Int
 }

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../lib/prisma";
 import { getNumericId } from "../../../../lib/util";
 import * as http from "../../../../lib/http";
+import * as queries from "../../../../lib/queries";
 
 interface PutBody {
   name: string;
@@ -33,105 +33,114 @@ export default async function handle(
 ) {
   const courseId = getNumericId(req.query.courseId);
   if (!courseId) {
+    console.log(
+      `Course ID ${req.query.courseId} could not be parsed as number`
+    );
     return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
     case http.Methods.Get: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (course) {
-        const location = await prisma.location.findUnique({
-          where: { id: course.locationId },
-        });
-        return res.status(http.Statuses.OK).json({
-          course: {
-            id: course.id,
-            name: course.name,
-            lat: location.lat,
-            lon: location.lon,
-            state: location.state,
-            city: location.city,
-          },
-        });
+      try {
+        const course = await queries.getCourseByID(courseId);
+        if (!course) {
+          console.log(`Course ${courseId} not found`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+
+        console.log(`Course ${courseId} found`);
+        return res.status(http.Statuses.OK).json({ course });
+      } catch (err) {
+        console.error(`Failed to get course ${courseId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to get course" });
       }
-      return res.status(http.Statuses.NotFound).end();
     }
     case http.Methods.Put: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (!course) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        if (!(await queries.courseExistsByID(courseId))) {
+          console.log(`Course ${courseId} not found`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+      } catch (err) {
+        console.error(`Failed to find course ${courseId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to find course" });
       }
 
       if (!isPutBody(req.body)) {
+        console.log("Failed to parse JSON body");
         return res
           .status(http.Statuses.BadRequest)
           .json({ error: "Invalid input" });
       }
+
       const { name, lat, lon, city, state } = req.body;
 
-      const sameLocation = await prisma.location.findFirst({
-        where: { city: city, state: state },
-      });
-      if (sameLocation) {
-        const courseWithName = await prisma.course.findFirst({
-          where: { name: name, location: sameLocation },
-        });
-        if (courseWithName && courseWithName.id !== course.id) {
-          return res
-            .status(409)
-            .json({ error: "Course with same name in same location exists" });
-        }
-      }
+      try {
+        const existingCourse = await queries.getCourse(name, city, state);
 
-      const updatedCourse = await prisma.course.update({
-        where: { id: course.id },
-        include: { location: true },
-        data: {
-          name,
-          location: {
-            update: {
-              id: course.locationId,
-              lat,
-              lon,
-              city,
-              state,
-            },
-          },
-        },
-      });
-      if (updatedCourse) {
-        return res.status(http.Statuses.OK).json({
-          user: {
-            id: updatedCourse.id,
-            name: updatedCourse.name,
-            lat: updatedCourse.location.lat,
-            lon: updatedCourse.location.lon,
-            city: updatedCourse.location.city,
-            state: updatedCourse.location.state,
-          },
-        });
-      }
-    }
-    case http.Methods.Delete: {
-      const course = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
-      if (!course) {
-        return res.status(http.Statuses.NotFound).end();
+        if (existingCourse.id !== courseId) {
+          console.log(
+            `Course ${name} in ${city}, ${state} already exists with ID ${existingCourse.id}`
+          );
+          return res.status(http.Statuses.Conflict).json({
+            error: "Course with same name in same location already exists",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to check if course became duplicate", err);
+        return res.status(http.Statuses.InternalServerError);
       }
 
       try {
-        await prisma.course.delete({ where: { id: course.id } });
+        const updatedCourse = await queries.updateCourse(
+          courseId,
+          name,
+          city,
+          state,
+          lat,
+          lon
+        );
+
+        console.log(`Updated course ${courseId}`);
+        return res.status(http.Statuses.OK).json({ course: updatedCourse });
+      } catch (err) {
+        console.error(`Failed to update course ${courseId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to update course" });
+      }
+    }
+    case http.Methods.Delete: {
+      try {
+        if (!(await queries.courseExistsByID(courseId))) {
+          console.log(`Course ${courseId} not found`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+      } catch (err) {
+        console.error(`Failed to find course ${courseId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to find course" });
+      }
+
+      try {
+        await queries.deleteCourse(courseId);
+
+        console.log(`Deleted course ${courseId}`);
         return res.status(http.Statuses.NoContent).end();
-      } catch (err: any) {
-        return res.status(http.Statuses.Conflict).json({ error: err });
+      } catch (err) {
+        console.error(`Failed to delete course ${courseId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to delete course" });
       }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }

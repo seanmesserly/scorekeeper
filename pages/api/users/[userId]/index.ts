@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../lib/prisma";
 import { getNumericId } from "../../../../lib/util";
 import * as http from "../../../../lib/http";
+import * as queries from "../../../../lib/queries";
 
 interface PutBody {
   firstName: string;
@@ -27,67 +27,104 @@ export default async function handle(
 ) {
   const userId = getNumericId(req.query.userId);
   if (!userId) {
+    console.log(`User ID ${req.query.userId} could not be parsed as number`);
     return res.status(http.Statuses.NotFound).end();
   }
 
   switch (req.method) {
     case http.Methods.Get: {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (user) {
-        return res.status(http.Statuses.OK).json(user);
+      try {
+        const user = await queries.getUserByID(userId);
+        if (!user) {
+          console.log(`User ${userId} does not exist`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+        console.log(`User ${userId} found`);
+        return res.status(http.Statuses.OK).json({ user });
+      } catch (err) {
+        console.error(`Error when looking for user ${userId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Error searching for user" });
       }
-      return res.status(http.Statuses.NotFound).end();
     }
     case http.Methods.Put: {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (!user) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        if (!(await queries.userWithIDExists(userId))) {
+          console.log(`User ${userId} not found`);
+          return res.status(http.Statuses.NotFound).end();
+        }
+      } catch (err) {
+        console.error(`Error verifying that user ${userId} exists`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Error verifying user exists" });
       }
 
       if (!isPutBody(req.body)) {
+        console.log("Failed to validate request body");
         return res
           .status(http.Statuses.BadRequest)
           .json({ error: "Invalid input" });
       }
+
       const { firstName, lastName, email } = req.body;
 
-      const userWithEmail = await prisma.user.findFirst({
-        where: { email: email },
-      });
-      if (userWithEmail && userWithEmail.id !== user.id) {
-        return res.status(http.Statuses.Conflict).end();
-      }
-
-      const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data: { fName: firstName, lName: lastName, email: email },
-      });
-      if (updatedUser) {
-        return res.status(http.Statuses.OK).json({
-          user: {
-            id: updatedUser.id,
-            firstName: updatedUser.fName,
-            lastName: updatedUser.lName,
-            email: updatedUser.email,
-            createDate: updatedUser.createdAt.toISOString(),
-          },
-        });
-      }
-    }
-    case http.Methods.Delete: {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (!user) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        const userWithSameEmail = await queries.getUserByEmail(email);
+        if (userWithSameEmail && userWithSameEmail.id !== userId) {
+          console.log(
+            `New email already taken by user ${userWithSameEmail.id}`
+          );
+          return res
+            .status(http.Statuses.Conflict)
+            .json({ error: "Email already taken" });
+        }
+      } catch (err) {
+        console.error(`Failed to search for user with email ${email}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Error searching for user with same email" });
       }
 
       try {
-        await prisma.user.delete({ where: { id: user.id } });
+        const updatedUser = await queries.updateUser(
+          userId,
+          firstName,
+          lastName,
+          email
+        );
+        if (!updatedUser) {
+          console.error(`Failed to update user ${userId}`);
+          return res
+            .status(http.Statuses.InternalServerError)
+            .json({ error: "Failed to update user" });
+        }
+
+        console.log(`User ${userId} updated`);
+        return res.status(http.Statuses.OK).json({ user: updatedUser });
+      } catch (err) {
+        console.error(`Error to update user ${userId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Error updating user" });
+      }
+    }
+    case http.Methods.Delete: {
+      try {
+        await queries.deleteUser(userId);
+
+        console.log(`User ${userId} deleted`);
         return res.status(http.Statuses.NoContent).end();
-      } catch (err: any) {
-        return res.status(http.Statuses.Conflict).json({ error: err });
+      } catch (err) {
+        console.error(`Error deleting user ${userId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Error deleting user" });
       }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }
