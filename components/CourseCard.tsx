@@ -66,7 +66,7 @@ export default function CourseCard({ course, layouts, scores }: Props) {
             {scores.map((scoreCard) => (
               <li
                 key={
-                  scoreCard.courseId + scoreCard.layoutId + scoreCard.datetime
+                  scoreCard.courseID + scoreCard.layoutID + scoreCard.datetime
                 }
               >
                 <ScoreCardPreview
