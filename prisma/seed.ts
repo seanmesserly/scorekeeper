@@ -97,39 +97,39 @@ async function seed() {
             scores: {
               create: [
                 {
-                  holeId: 1,
+                  number: 1,
                   strokes: 3,
                 },
                 {
-                  holeId: 2,
+                  number: 2,
                   strokes: 2,
                 },
                 {
-                  holeId: 3,
+                  number: 3,
                   strokes: 3,
                 },
                 {
-                  holeId: 4,
+                  number: 4,
                   strokes: 4,
                 },
                 {
-                  holeId: 5,
+                  number: 5,
                   strokes: 3,
                 },
                 {
-                  holeId: 6,
+                  number: 6,
                   strokes: 3,
                 },
                 {
-                  holeId: 7,
+                  number: 7,
                   strokes: 3,
                 },
                 {
-                  holeId: 8,
+                  number: 8,
                   strokes: 1,
                 },
                 {
-                  holeId: 9,
+                  number: 9,
                   strokes: 3,
                 },
               ],

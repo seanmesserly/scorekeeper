@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../../../lib/prisma";
 import { getNumericId, isValidISOString } from "../../../../../../lib/util";
 import * as http from "../../../../../../lib/http";
+import * as queries from "../../../../../../lib/queries";
 
 interface ScoreSchema {
   number: number;
@@ -19,8 +19,6 @@ function isScore(object: unknown): object is ScoreSchema {
 }
 
 interface PutBody {
-  courseId: number;
-  layoutId: number;
   datetime: string;
   scores: Array<ScoreSchema>;
 }
@@ -28,10 +26,6 @@ interface PutBody {
 function isPutBody(object: unknown): object is PutBody {
   return (
     typeof object === "object" &&
-    "courseId" in object &&
-    typeof object.courseId === "number" &&
-    "layoutId" in object &&
-    typeof object.layoutId === "number" &&
     "datetime" in object &&
     typeof object.datetime === "string" &&
     isValidISOString(object.datetime) &&
@@ -47,129 +41,112 @@ export default async function handle(
 ) {
   const userId = getNumericId(req.query.userId);
   if (!userId) {
+    console.log(`User ID ${req.query.userId} could not be parsed as number`);
     return res.status(http.Statuses.NotFound).end();
   }
 
   const scoreId = getNumericId(req.query.scoreId);
   if (!scoreId) {
+    console.log(`Score ID ${req.query.scoreId} could not be parsed as number`);
     return res.status(http.Statuses.NotFound).end();
+  }
+
+  try {
+    if (!(await queries.userWithIDExists(userId))) {
+      console.log(`User ${userId} does not exist`);
+      return res
+        .status(http.Statuses.NotFound)
+        .json({ error: "User not found" });
+    }
+  } catch (err) {
+    console.error(`Failed to check if user ${userId} exists`, err);
+    return res
+      .status(http.Statuses.InternalServerError)
+      .json({ error: "failed to check if user exists" });
   }
 
   switch (req.method) {
     case http.Methods.Get: {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (!user) {
-        return res.status(http.Statuses.NotFound).end();
-      }
-      const scoreCard = await prisma.scoreCard.findUnique({
-        where: { id: scoreId },
-        include: { scores: { include: { hole: true } }, layout: true },
-      });
-      if (!scoreCard) {
-        return res.status(http.Statuses.NotFound).end();
-      }
+      try {
+        const scoreCard = await queries.getScoreCard(scoreId);
+        if (!scoreCard) {
+          console.log(`Failed to find score card with ID ${scoreId}`);
+          return res
+            .status(http.Statuses.NotFound)
+            .json({ error: "Score card not fount" });
+        }
 
-      return res.status(http.Statuses.OK).json({
-        scoreCard: {
-          id: scoreCard.id,
-          courseId: scoreCard.layout.courseId,
-          layoutId: scoreCard.layoutId,
-          datetime: scoreCard.date.toISOString(),
-          scores: scoreCard.scores.map((score) => {
-            return {
-              number: score.hole.number,
-              strokes: score.strokes,
-            };
-          }),
-        },
-      });
+        return res.status(http.Statuses.OK).json({ scoreCard });
+      } catch (err) {
+        console.error(`Failed to search for score card ${scoreId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Failed to search for score card" });
+      }
     }
     case http.Methods.Put: {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (!user) {
-        return res.status(http.Statuses.NotFound).end();
-      }
-      const scoreCard = await prisma.scoreCard.findUnique({
-        where: { id: scoreId },
-      });
-      if (!scoreCard) {
-        return res.status(http.Statuses.NotFound).end();
+      try {
+        const scoreCard = await queries.getScoreCard(scoreId);
+        if (!scoreCard) {
+          console.log(`Score card ${scoreId} not found`);
+          return res
+            .status(http.Statuses.NotFound)
+            .json({ error: "failed to find score card" });
+        }
+      } catch (err) {
+        console.error(`Failed to search for score card ${scoreId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Failed to search for score card" });
       }
 
       if (!isPutBody(req.body)) {
+        console.log("Failed to parse request body");
         return res
-          .status(400)
+          .status(http.Statuses.BadRequest)
           .json({ error: "Missing or incorrect body parameters" });
       }
 
-      const { courseId, layoutId, datetime, scores } = req.body;
+      const { datetime, scores } = req.body;
 
-      const layout = await prisma.layout.findUnique({
-        where: { id: layoutId },
-      });
-      if (!layout) {
+      try {
+        const scoreCard = await queries.updateScoreCard(
+          scoreId,
+          new Date(datetime),
+          scores
+        );
+
+        if (!scoreCard) {
+          console.log(`Failed to update score card ${scoreId}`);
+          return res
+            .status(http.Statuses.InternalServerError)
+            .json({ error: "Failed to update score card" });
+        }
+
+        console.log(`Updated score card ${scoreId}`);
+        return res.status(http.Statuses.OK).json({ scoreCard });
+      } catch (err) {
+        console.error(`Error when updating score card ${scoreId}`, err);
         return res
-          .status(http.Statuses.BadRequest)
-          .json({ error: "Layout not found" });
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Error when updating score card" });
       }
-
-      const scoreObjects = await Promise.all(
-        scores.map(async (score) => {
-          // TODO: we are assuming this returns a value
-          const hole = await prisma.hole.findFirst({
-            where: { layoutId: layout.id, number: score.number },
-          });
-          return {
-            holeId: hole.id,
-            strokes: score.strokes,
-          };
-        })
-      );
-
-      const updatedScoreCard = await prisma.scoreCard.update({
-        where: { id: scoreCard.id },
-        data: {
-          date: new Date(datetime),
-          layoutId: layout.id,
-          userId: user.id,
-          scores: {
-            create: scoreObjects,
-          },
-        },
-      });
-
-      return res.status(http.Statuses.Created).json({
-        scoreCard: {
-          courseId: layout.courseId,
-          layoutId: layout.id,
-          datetime: updatedScoreCard.date.toISOString(),
-          scores: scoreObjects,
-        },
-      });
     }
     case http.Methods.Delete: {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (!user) {
-        return res.status(http.Statuses.NotFound).end();
-      }
-      const scoreCard = await prisma.scoreCard.findUnique({
-        where: { id: scoreId },
-      });
-      if (!scoreCard) {
-        return res.status(http.Statuses.NotFound).end();
-      }
+      try {
+        await queries.deleteScoreCard(scoreId);
 
-      await prisma.scoreCard.delete({ where: { id: scoreId } });
-
-      return res.status(http.Statuses.NoContent).end();
+        console.log(`Deleted score card ${scoreId}`);
+        return res.status(http.Statuses.NoContent).end();
+      } catch (err) {
+        console.error(`Error when deleting score card ${scoreId}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "Error when trying to delete score card" });
+      }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../lib/prisma";
 import { hashPassword } from "../../../lib/auth";
 import * as http from "../../../lib/http";
+import * as queries from "../../../lib/queries";
 
 interface RequestBody {
   firstName: string;
@@ -34,38 +34,69 @@ export default async function handle(
   switch (req.method) {
     case http.Methods.Post: {
       if (!isRequestBody(req.body)) {
+        console.log("Failed to parse request body", req.body);
         return res
           .status(http.Statuses.BadRequest)
           .json({ error: "Invalid input" });
       }
+
       const { firstName, lastName, email, username, password } = req.body;
 
-      const userWithEmail = await prisma.user.findFirst({
-        where: { email: email },
-      });
-
-      const userWithUsername = await prisma.user.findFirst({
-        where: { username: username },
-      });
-      if (userWithEmail || userWithUsername) {
-        return res.status(http.Statuses.Conflict).end();
+      // ENsure that username and email are not duplicates
+      try {
+        if (await queries.userWithUsernameExists(username)) {
+          console.log(`User with email ${email} already exists`);
+          return res
+            .status(http.Statuses.Conflict)
+            .json({ error: "email already in use" });
+        }
+      } catch (err) {
+        console.error(
+          `Failed to search for user with username ${username}`,
+          err
+        );
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to check for unique username" });
       }
 
-      const passwordHash = await hashPassword(password);
+      try {
+        if (await queries.userWithEmailExists(email)) {
+          console.log(`User with email ${email} already exists`);
+          return res
+            .status(http.Statuses.Conflict)
+            .json({ error: "email already in use" });
+        }
+      } catch (err) {
+        console.error(`Failed to search for user with email ${email}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to check for unique email" });
+      }
 
-      const user = await prisma.user.create({
-        data: {
-          fName: firstName,
-          lName: lastName,
-          email: email,
-          username: username,
-          passwordHash: passwordHash,
-        },
-      });
+      // register user
+      try {
+        const passwordHash = await hashPassword(password);
 
-      return res.status(http.Statuses.Created).json(user);
+        const user = await queries.createUser(
+          username,
+          email,
+          firstName,
+          lastName,
+          passwordHash
+        );
+
+        console.log(`Created user ${username}`);
+        return res.status(http.Statuses.Created).json(user);
+      } catch (err) {
+        console.error(`Failed to create user ${username}`, err);
+        return res
+          .status(http.Statuses.InternalServerError)
+          .json({ error: "failed to create user" });
+      }
     }
     default: {
+      console.log(`Unsupported method ${req.method} for path ${req.url}`);
       return res.status(http.Statuses.NotFound).end();
     }
   }

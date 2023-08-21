@@ -1,5 +1,13 @@
 import prisma from "./prisma";
-import { Course, Hole, Layout } from "./types";
+import {
+  Course,
+  Hole,
+  Layout,
+  User,
+  UserAuth,
+  Score,
+  ScoreCard,
+} from "./types";
 
 // courseExists determines if the course with the given name and location exists.
 export const courseExists = async (
@@ -287,4 +295,280 @@ export const updateLayout = async (
 // deleteLayout deletes the layout with the given ID.
 export const deleteLayout = async (layoutID: number): Promise<void> => {
   await prisma.layout.delete({ where: { id: layoutID } });
+};
+
+// getUserAuth finds a user with auth information based on their email or returns null if none exist.
+export const getUserAuth = async (email: string): Promise<UserAuth | null> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+  if (!user) {
+    return null;
+  }
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    passwordHash: user.passwordHash,
+  };
+};
+
+// getUserByID returns the target user if it exists and null otherwise.
+export const getUserByID = async (id: number): Promise<User | null> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+  return {
+    id: user.id,
+    firstName: user.fName,
+    lastName: user.lName,
+    email: user.email,
+    username: user.username,
+  };
+};
+
+// getUserByEmail returns the target user by email if it exists and null otherwise.
+export const getUserByEmail = async (email: string): Promise<User | null> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+  return {
+    id: user.id,
+    firstName: user.fName,
+    lastName: user.lName,
+    email: user.email,
+    username: user.username,
+  };
+};
+
+// userWithEmailExists returns true if there exists a user with the given email.
+export const userWithEmailExists = async (email: string): Promise<boolean> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+  return user !== null;
+};
+
+// userWithUsernameExists returns true if there exists a user with the given username.
+export const userWithUsernameExists = async (
+  username: string
+): Promise<boolean> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      username: username,
+    },
+  });
+  return user !== null;
+};
+
+// userWithIDExists returns true if there exists a user with the given ID.
+export const userWithIDExists = async (id: number): Promise<boolean> => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: id,
+    },
+  });
+  return user !== null;
+};
+
+// createUser registers a user in the database.
+export const createUser = async (
+  username: string,
+  email: string,
+  firstName: string,
+  lastName: string,
+  passwordHash: string
+): Promise<User> => {
+  const user = await prisma.user.create({
+    data: {
+      fName: firstName,
+      lName: lastName,
+      email: email,
+      username: username,
+      passwordHash: passwordHash,
+    },
+  });
+
+  return {
+    id: user.id,
+    firstName: user.fName,
+    lastName: user.lName,
+    email: user.email,
+    username: user.username,
+  };
+};
+
+// updateUser updates a user's first name, last name, or email.
+export const updateUser = async (
+  userID: number,
+  firstName: string,
+  lastName: string,
+  email: string
+): Promise<User | null> => {
+  const user = await prisma.user.update({
+    data: {
+      fName: firstName,
+      lName: lastName,
+      email: email,
+    },
+    where: {
+      id: userID,
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+  return {
+    id: user.id,
+    firstName: user.fName,
+    lastName: user.lName,
+    username: user.username,
+    email: user.email,
+  };
+};
+
+// deleteUser deletes the user with the given ID.
+export const deleteUser = async (userId: number): Promise<void> => {
+  await prisma.user.delete({ where: { id: userId } });
+};
+
+// createScoreCard creates a new score card with the given metadata.
+export const createScoreCard = async (
+  userID: number,
+  layoutID: number,
+  datetime: Date,
+  scores: Array<Score>
+): Promise<ScoreCard> => {
+  const scoreCard = await prisma.scoreCard.create({
+    include: {
+      scores: true,
+      layout: true,
+    },
+    data: {
+      userId: userID,
+      layoutId: layoutID,
+      date: datetime,
+      scores: {
+        create: scores,
+      },
+    },
+  });
+
+  return {
+    id: scoreCard.id,
+    courseID: scoreCard.layout.courseId,
+    layoutID: scoreCard.layoutId,
+    datetime: scoreCard.date.toISOString(),
+    scores: scoreCard.scores,
+  };
+};
+
+// getScoreCard returns the score card with the given ID, or null if it doesn't exist.
+export const getScoreCard = async (id: number): Promise<ScoreCard | null> => {
+  const scoreCard = await prisma.scoreCard.findUnique({
+    include: {
+      scores: true,
+      layout: true,
+    },
+    where: {
+      id: id,
+    },
+  });
+  if (!scoreCard) {
+    return null;
+  }
+
+  return {
+    id: scoreCard.id,
+    layoutID: scoreCard.layoutId,
+    courseID: scoreCard.layout.courseId,
+    datetime: scoreCard.date.toISOString(),
+    scores: scoreCard.scores,
+  };
+};
+
+// getScoreCards returns the score cards associated the given user.
+export const getScoreCards = async (
+  userID: number
+): Promise<Array<ScoreCard>> => {
+  const scoreCards = await prisma.scoreCard.findMany({
+    include: {
+      scores: true,
+      layout: true,
+    },
+    where: {
+      userId: userID,
+    },
+  });
+  if (!scoreCards) {
+    return [];
+  }
+
+  return scoreCards.map((scoreCard) => ({
+    id: scoreCard.id,
+    layoutID: scoreCard.layoutId,
+    courseID: scoreCard.layout.courseId,
+    datetime: scoreCard.date.toISOString(),
+    scores: scoreCard.scores,
+  }));
+};
+
+// updateScoreCard updates the target score card with a new datetime and scores. Returns null if the update fails
+export const updateScoreCard = async (
+  scoreCardID: number,
+  datetime: Date,
+  scores: Array<Score>
+): Promise<ScoreCard | null> => {
+  const scoreCard = await prisma.scoreCard.update({
+    include: {
+      scores: true,
+      layout: true,
+    },
+    data: {
+      date: datetime,
+      scores: {
+        deleteMany: {
+          scoreCardId: scoreCardID,
+        },
+        create: scores,
+      },
+    },
+    where: {
+      id: scoreCardID,
+    },
+  });
+
+  if (!scoreCard) {
+    return null;
+  }
+
+  return {
+    id: scoreCard.id,
+    courseID: scoreCard.layout.courseId,
+    layoutID: scoreCard.layoutId,
+    datetime: scoreCard.date.toISOString(),
+    scores: scoreCard.scores,
+  };
+};
+
+// deleteScoreCard deletes the score card with the given ID.
+export const deleteScoreCard = async (scoreCardID: number): Promise<void> => {
+  await prisma.scoreCard.delete({ where: { id: scoreCardID } });
 };
