@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { passwordMatchesHash, getJWT } from "../../../lib/auth";
-import * as http from "../../../lib/http";
-import * as queries from "../../../lib/queries";
+import { passwordMatchesHash, getJWT } from "@lib/auth";
+import * as http from "@lib/http";
+import * as queries from "@lib/queries";
 
 interface LoginBody {
   email: string;
