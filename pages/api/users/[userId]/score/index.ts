@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getNumericId, isValidISOString } from "../../../../../lib/util";
-import * as http from "../../../../../lib/http";
-import * as queries from "../../../../../lib/queries";
+import { getNumericId, isValidISOString } from "@lib/util";
+import * as http from "@lib/http";
+import * as queries from "@lib/queries";
 
 interface ScoreSchema {
   number: number;

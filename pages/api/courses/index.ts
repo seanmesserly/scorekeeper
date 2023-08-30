@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import * as http from "../../../lib/http";
-import * as queries from "../../../lib/queries";
+import * as http from "@lib/http";
+import * as queries from "@lib/queries";
 
 export default async function handle(
   req: NextApiRequest,

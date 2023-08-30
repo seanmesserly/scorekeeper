@@ -1,5 +1,5 @@
-import Layout from "../components/Layout";
-import Searchbar from "../components/Searchbar";
+import Layout from "@components/Layout";
+import Searchbar from "@components/Searchbar";
 
 export default function Home() {
   return (

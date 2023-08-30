@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { hashPassword } from "../../../lib/auth";
-import * as http from "../../../lib/http";
-import * as queries from "../../../lib/queries";
+import { hashPassword } from "@lib/auth";
+import * as http from "@lib/http";
+import * as queries from "@lib/queries";
 
 interface RequestBody {
   firstName: string;

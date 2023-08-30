@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getNumericId } from "../../../../../../lib/util";
-import * as http from "../../../../../../lib/http";
-import * as queries from "../../../../../../lib/queries";
+import { getNumericId } from "@lib/util";
+import * as http from "@lib/http";
+import * as queries from "@lib/queries";
 
 interface HoleSchema {
   number: number;

@@ -1,9 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import CourseCard from "../../components/CourseCard";
-import Layout from "../../components/Layout";
-import { getCourse, getLayouts, getScoreCards } from "../../lib/util";
-import { Course, Layout as CourseLayout, ScoreCard } from "../../lib/types";
+import CourseCard from "@components/CourseCard";
+import Layout from "@components/Layout";
+import { getCourse, getLayouts, getScoreCards } from "@lib/util";
+import { Course, Layout as CourseLayout, ScoreCard } from "@lib/types";
 
 const logErr = (err: any) => {
   console.error(err);
