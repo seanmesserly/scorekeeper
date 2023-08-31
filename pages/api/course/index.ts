@@ -13,6 +13,7 @@ interface RequestBody {
 function isRequestBody(object: unknown): object is RequestBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "name" in object &&
     typeof object.name === "string" &&
     "lat" in object &&

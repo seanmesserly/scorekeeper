@@ -20,6 +20,10 @@ export default function ScoreCardPreview({
   const month = date.toLocaleString("default", { month: "long" });
   const dateString = `${month} ${date.getDay()}, ${date.getFullYear()} ${time}`;
   const layout = layouts.find((layout) => layout.id === scoreCard.layoutID);
+  if (!layout) {
+    //TODO: properly handle this
+    return <div>Layout not found</div>
+  }
   const totalPar = layout.holes
     .map((layout) => layout.par)
     .reduce((total, par) => total + par);

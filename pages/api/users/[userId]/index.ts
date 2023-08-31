@@ -12,6 +12,7 @@ interface PutBody {
 function isPutBody(object: unknown): object is PutBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "firstName" in object &&
     typeof object.firstName === "string" &&
     "lastName" in object &&

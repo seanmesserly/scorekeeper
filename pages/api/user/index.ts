@@ -14,6 +14,7 @@ interface RequestBody {
 function isRequestBody(object: unknown): object is RequestBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "firstName" in object &&
     typeof object.firstName === "string" &&
     "lastName" in object &&

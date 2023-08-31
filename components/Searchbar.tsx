@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { listCourses } from "../lib/util";
+import { Course } from "@lib/types";
 
 const Searchbar = () => {
   const [inputFocused, setInputFocused] = useState(false);
   const [input, setInput] = useState("");
-  const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
     listCourses().then((courses) => setCourses(courses));
@@ -38,9 +39,8 @@ const Searchbar = () => {
         />
       </div>
       <ul
-        className={`absolute top-11 left-12 w-10/12 bg-white rounded-b-lg border border-t-0 border-gray-300 ${
-          inputFocused && input.length > 0 ? "" : "hidden"
-        }`}
+        className={`absolute top-11 left-12 w-10/12 bg-white rounded-b-lg border border-t-0 border-gray-300 ${inputFocused && input.length > 0 ? "" : "hidden"
+          }`}
       >
         {courses
           .filter((course) => course.name.toLowerCase().includes(input))
@@ -50,16 +50,14 @@ const Searchbar = () => {
               className="px-5 py-3 text-gray-600 hover:bg-gray-100 font-semibold cursor-pointer"
             >
               <Link href={`/courses/${course.id}`}>
-                <a>{course.name}</a>
+                {course.name}
               </Link>
             </li>
           ))}
         <div className="border-t border-gray-300 bg-gray-50 text-center p-5 rounded-b-lg">
           Not seeing it here?
-          <Link href="/create">
-            <a className="ml-1 font-medium text-purple-500 hover:text-purple-700">
-              Create a new course!
-            </a>
+          <Link href="/create" className="ml-1 font-medium text-purple-500 hover:text-purple-700">
+            Create a new course!
           </Link>
         </div>
       </ul>

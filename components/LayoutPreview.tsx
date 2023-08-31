@@ -15,13 +15,9 @@ export default function LayoutPreview({ layout }: Props) {
     arr: Array<Hole>,
     width: number
   ): Array<Array<Hole>> =>
-    arr.reduce(
-      (rows, key, index) =>
-        (index % width == 0
-          ? rows.push([key])
-          : rows[rows.length - 1].push(key)) && rows,
-      []
-    );
+    arr.length <= width ?
+      [arr] :
+      [arr.slice(0, width)].concat(partitionHoles(arr.slice(width), width));
 
   const groupedHoles = partitionHoles(layout.holes, 9);
 

@@ -12,6 +12,7 @@ interface HoleSchema {
 function isHole(object: unknown): object is HoleSchema {
   return (
     typeof object === "object" &&
+    object !== null &&
     "number" in object &&
     typeof object.number === "number" &&
     "par" in object &&
@@ -29,6 +30,7 @@ interface RequestBody {
 function isRequestBody(object: unknown): object is RequestBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "name" in object &&
     typeof object.name === "string" &&
     "holes" in object &&

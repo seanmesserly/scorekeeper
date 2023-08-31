@@ -19,5 +19,5 @@ export interface TokenBody {
   username: string;
 }
 export function getJWT(body: TokenBody): string {
-  return jwt.sign(body, process.env.JWT_SECRET);
+  return jwt.sign(body, process.env.JWT_SECRET as string);
 }
