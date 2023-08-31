@@ -1,3 +1,5 @@
+"use client"
+
 import Layout from "@components/Layout";
 import Searchbar from "@components/Searchbar";
 
