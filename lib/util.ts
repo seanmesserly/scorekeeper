@@ -1,6 +1,9 @@
 import { Course, Layout, ScoreCard } from "./types";
 
-export function getNumericId(param: string | string[]): number | null {
+export function getNumericId(param: string | string[] | undefined): number | null {
+  if (param === undefined) {
+    return null
+  }
   if (param instanceof Array) {
     return null;
   }

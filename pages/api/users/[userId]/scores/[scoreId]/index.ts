@@ -11,6 +11,7 @@ interface ScoreSchema {
 function isScore(object: unknown): object is ScoreSchema {
   return (
     typeof object === "object" &&
+    object !== null &&
     "number" in object &&
     typeof object.number === "number" &&
     "strokes" in object &&
@@ -26,6 +27,7 @@ interface PutBody {
 function isPutBody(object: unknown): object is PutBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "datetime" in object &&
     typeof object.datetime === "string" &&
     isValidISOString(object.datetime) &&

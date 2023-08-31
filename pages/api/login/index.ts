@@ -11,6 +11,7 @@ interface LoginBody {
 function isLoginBody(object: unknown): object is LoginBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "email" in object &&
     typeof object.email === "string" &&
     "password" in object &&

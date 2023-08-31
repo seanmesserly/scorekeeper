@@ -14,6 +14,7 @@ interface PutBody {
 function isPutBody(object: unknown): object is PutBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "name" in object &&
     typeof object.name === "string" &&
     "lat" in object &&
@@ -58,18 +59,6 @@ export default async function handle(
       }
     }
     case http.Methods.Put: {
-      try {
-        if (!(await queries.courseExistsByID(courseId))) {
-          console.log(`Course ${courseId} not found`);
-          return res.status(http.Statuses.NotFound).end();
-        }
-      } catch (err) {
-        console.error(`Failed to find course ${courseId}`, err);
-        return res
-          .status(http.Statuses.InternalServerError)
-          .json({ error: "failed to find course" });
-      }
-
       if (!isPutBody(req.body)) {
         console.log("Failed to parse JSON body");
         return res
@@ -81,6 +70,11 @@ export default async function handle(
 
       try {
         const existingCourse = await queries.getCourse(name, city, state);
+
+        if (!existingCourse) {
+          console.log(`Course ${courseId} not found`);
+          return res.status(http.Statuses.NotFound).end();
+        }
 
         if (existingCourse.id !== courseId) {
           console.log(

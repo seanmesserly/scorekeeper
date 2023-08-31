@@ -11,6 +11,7 @@ interface ScoreSchema {
 function isScore(object: unknown): object is ScoreSchema {
   return (
     typeof object === "object" &&
+    object !== null &&
     "number" in object &&
     typeof object.number === "number" &&
     "strokes" in object &&
@@ -27,6 +28,7 @@ interface RequestBody {
 function isRequestBody(object: unknown): object is RequestBody {
   return (
     typeof object === "object" &&
+    object !== null &&
     "layoutId" in object &&
     typeof object.layoutId === "number" &&
     "datetime" in object &&
