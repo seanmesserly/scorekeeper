@@ -1,4 +1,5 @@
-import { useRouter } from "next/router";
+"use client"
+
 import { useEffect, useState } from "react";
 import CourseCard from "@components/CourseCard";
 import Layout from "@components/Layout";
@@ -9,9 +10,15 @@ const logErr = (err: any) => {
   console.error(err);
 };
 
-export default function CoursePage() {
-  const router = useRouter();
-  const { courseId: courseIdQuery } = router.query;
+type Props = {
+  params: {
+    courseId: string
+  }
+}
+
+export default function CoursePage({ params }: Props) {
+  console.log(`Loading courses page`)
+  const courseIdQuery = params.courseId;
   const [course, setCourse] = useState<Course>();
   const [layouts, setLayouts] = useState<CourseLayout[]>([]);
   const [scores, setScores] = useState<ScoreCard[]>([]);
