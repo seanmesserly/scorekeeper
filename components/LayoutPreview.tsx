@@ -27,22 +27,22 @@ export default function LayoutPreview({ layout }: Props) {
         <h1 className="text-lg font-bold">{layout.name}</h1>
         {layout.holes.length} holes | Par {totalPar} | {totalDistance} ft
       </section>
-      <section className="text-xs">
+      <section className="text-xs flex flex-col space-y-3">
         {groupedHoles.map((holeList, idx) => (
-          <div key={idx} className="flex flex-row">
-            <div className="text-right text-gray-400 flex flex-col mr-3">
-              <div>Hole</div>
-              <div>Dist</div>
-              <div>Par</div>
+          <section key={idx} className="flex flex-row">
+            <div className="text-left text-gray-400 flex flex-col mr-3">
+              <p>Hole</p>
+              <p>Dist</p>
+              <p>Par</p>
             </div>
             {holeList.map((hole, holeIdx) => (
               <div key={holeIdx} className="text-center flex flex-col mx-1">
-                <div className="font-bold">{hole.number}</div>
-                <div className="text-gray-400">{hole.distance}</div>
-                <div className="text-gray-400">{hole.par}</div>
+                <p className="font-bold">{hole.number}</p>
+                <p className="text-gray-400">{hole.distance}</p>
+                <p className="text-gray-400">{hole.par}</p>
               </div>
             ))}
-          </div>
+          </section>
         ))}
       </section>
     </div>

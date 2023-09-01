@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import CourseCard from "@components/CourseCard";
-import Layout from "@components/Layout";
 import { getCourse, getLayouts, getScoreCards } from "@lib/util";
 import { Course, Layout as CourseLayout, ScoreCard } from "@lib/types";
 
@@ -39,9 +38,7 @@ export default function CoursePage({ params }: Props) {
 
   return (
     course && (
-      <Layout>
-        <CourseCard course={course} layouts={layouts} scores={scores} />
-      </Layout>
+      <CourseCard course={course} layouts={layouts} scores={scores} />
     )
   );
 }

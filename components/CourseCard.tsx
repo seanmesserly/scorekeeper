@@ -1,3 +1,5 @@
+"use client"
+
 import { Course, Layout, ScoreCard } from "../lib/types";
 import LayoutPreview from "../components/LayoutPreview";
 import { useState } from "react";
@@ -20,34 +22,24 @@ export default function CourseCard({ course, layouts, scores }: Props) {
   const unselectedTabColors = "bg-white text-purple-400";
 
   return (
-    <div>
+    <>
       <header className="mb-4">
         <h1 className="text-xl font-bold">{course.name}</h1>
-        <div className="text-md text-gray-400">
+        <h2 className="text-md text-gray-400">
           {course.city}, {course.state}
-        </div>
+        </h2>
       </header>
-      <section>
-        <div className="flex flex-row mb-4">
-          <div
-            className={`w-1/2 max-w-sm border-2 border-purple-400 text-center cursor-pointer ${
-              tab === Tab.Layouts ? selectedTabColors : unselectedTabColors
+      <section className="flex flex-row mb-4">
+        <button onClick={() => setTab(Tab.Layouts)}
+          className={`w-1/2 max-w-sm border-2 border-purple-400 text-center cursor-pointer ${tab === Tab.Layouts ? selectedTabColors : unselectedTabColors
             }`}
-          >
-            <a onClick={() => setTab(Tab.Layouts)}>
-              <div>Info</div>
-            </a>
-          </div>
-          <div
-            className={`w-1/2 max-w-sm border-2 border-purple-400 text-center cursor-pointer ${
-              tab === Tab.Scores ? selectedTabColors : unselectedTabColors
+        >Info
+        </button>
+        <button onClick={() => setTab(Tab.Scores)}
+          className={`w-1/2 max-w-sm border-2 border-purple-400 text-center cursor-pointer ${tab === Tab.Scores ? selectedTabColors : unselectedTabColors
             }`}
-          >
-            <a onClick={() => setTab(Tab.Scores)}>
-              <div>Scores</div>
-            </a>
-          </div>
-        </div>
+        >Scores
+        </button>
       </section>
       {tab === Tab.Layouts && (
         <section>
@@ -80,6 +72,6 @@ export default function CourseCard({ course, layouts, scores }: Props) {
           </ul>
         </section>
       )}
-    </div>
+    </>
   );
 }
