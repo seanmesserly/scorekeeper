@@ -3,41 +3,21 @@ import { getNumericId, httpError } from "@lib/util";
 import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { Layout } from "@lib/types";
+import { z } from "zod";
 
-interface HoleSchema {
-  number: number;
-  par: number;
-  distance: number;
-}
+const putBodySchema = z.object({
+  name: z.string().nonempty(),
+  holes: z.object({
+    number: z.number().min(1),
+    par: z.number().min(1),
+    distance: z.number().min(0)
+  }).array()
+})
 
-function isHole(object: unknown): object is HoleSchema {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "number" in object &&
-    typeof object.number === "number" &&
-    "par" in object &&
-    typeof object.par === "number" &&
-    "distance" in object &&
-    typeof object.distance === "number"
-  );
-}
-
-interface PutBody {
-  name: string;
-  holes: Array<HoleSchema>;
-}
+type PutBody = z.infer<typeof putBodySchema>
 
 function isPutBody(object: unknown): object is PutBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "name" in object &&
-    typeof object.name === "string" &&
-    "holes" in object &&
-    object.holes instanceof Array &&
-    object.holes.every((hole) => isHole(hole))
-  );
+  return putBodySchema.safeParse(object).success
 }
 
 type Params = {
