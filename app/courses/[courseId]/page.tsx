@@ -1,13 +1,6 @@
-"use client"
-
-import { useEffect, useState } from "react";
 import CourseCard from "@components/CourseCard";
-import { getCourse, getLayouts, getScoreCards } from "@lib/util";
-import { Course, Layout as CourseLayout, ScoreCard } from "@lib/types";
-
-const logErr = (err: any) => {
-  console.error(err);
-};
+import { getNumericId } from "@lib/util";
+import * as queries from "@lib/queries"
 
 type Props = {
   params: {
@@ -15,26 +8,21 @@ type Props = {
   }
 }
 
-export default function CoursePage({ params }: Props) {
+export default async function CoursePage({ params }: Props) {
   console.log(`Loading courses page`)
   const courseIdQuery = params.courseId;
-  const [course, setCourse] = useState<Course>();
-  const [layouts, setLayouts] = useState<CourseLayout[]>([]);
-  const [scores, setScores] = useState<ScoreCard[]>([]);
-
-  const courseId = courseIdQuery?.toString();
+  const courseId = getNumericId(courseIdQuery)
+  if (!courseId) {
+    // TODO redirect or something
+    return "Bad ID"
+  }
 
   // TODO: Get real ID when login is added
-  const userId = "1";
+  const userId = 1;
 
-  useEffect(() => {
-    if (!courseId) {
-      return;
-    }
-    getCourse(courseId).then(setCourse).catch(logErr);
-    getLayouts(courseId).then(setLayouts).catch(logErr);
-    getScoreCards(userId).then(setScores).catch(logErr);
-  }, [courseId, userId]);
+  const course = await queries.getCourseByID(courseId)
+  const layouts = await queries.getLayouts(courseId)
+  const scores = await queries.getScoreCards(userId)
 
   return (
     course && (
