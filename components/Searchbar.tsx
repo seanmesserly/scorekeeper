@@ -2,17 +2,15 @@
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { listCourses } from "../lib/util";
 import { Course } from "@lib/types";
 
-const Searchbar = () => {
+type Props = {
+  courses: Course[]
+}
+
+const Searchbar = ({ courses }: Props) => {
   const [inputFocused, setInputFocused] = useState(false);
   const [input, setInput] = useState("");
-  const [courses, setCourses] = useState<Course[]>([]);
-
-  useEffect(() => {
-    listCourses().then((courses) => setCourses(courses));
-  }, []);
 
   const handleBlur: React.FocusEventHandler = (e: React.FocusEvent<HTMLElement>) => {
     const currentTarget = e.currentTarget
