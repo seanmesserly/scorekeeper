@@ -3,21 +3,18 @@ import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { httpError } from "@lib/util";
+import { z } from "zod";
 
-interface LoginBody {
-  email: string;
-  password: string;
-}
+const loginBodySchema = z.object({
+  email: z.string().email().nonempty(),
+  //TODO: Add password requirements.
+  password: z.string().nonempty()
+})
+
+type LoginBody = z.infer<typeof loginBodySchema>
 
 function isLoginBody(object: unknown): object is LoginBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "email" in object &&
-    typeof object.email === "string" &&
-    "password" in object &&
-    typeof object.password === "string"
-  );
+  return loginBodySchema.safeParse(object).success
 }
 
 type ResponseType = { username: string, token: string } | { error: string }

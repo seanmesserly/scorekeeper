@@ -3,24 +3,18 @@ import { getNumericId, httpError } from "@lib/util";
 import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { User } from "@lib/types";
+import { z } from "zod";
 
-interface PutBody {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+const putBodySchema = z.object({
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  email: z.string().email().nonempty()
+})
+
+type PutBody = z.infer<typeof putBodySchema>
 
 function isPutBody(object: unknown): object is PutBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "firstName" in object &&
-    typeof object.firstName === "string" &&
-    "lastName" in object &&
-    typeof object.lastName === "string" &&
-    "email" in object &&
-    typeof object.email === "string"
-  );
+  return putBodySchema.safeParse(object).success
 }
 
 type Params = {

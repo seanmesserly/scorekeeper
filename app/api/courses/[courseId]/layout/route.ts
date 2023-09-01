@@ -4,47 +4,26 @@ import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { Layout } from "@lib/types";
 import { httpError } from "@lib/util";
+import { z } from "zod";
 
-interface HoleSchema {
-  number: number;
-  par: number;
-  distance: number;
-}
+const requestBodySchema = z.object({
+  name: z.string().nonempty(),
+  holes: z.object({
+    number: z.number().min(1),
+    par: z.number().min(1),
+    distance: z.number().min(0)
+  }).array()
+})
 
-function isHole(object: unknown): object is HoleSchema {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "number" in object &&
-    typeof object.number === "number" &&
-    "par" in object &&
-    typeof object.par === "number" &&
-    "distance" in object &&
-    typeof object.distance === "number"
-  );
-}
-
-interface RequestBody {
-  name: string;
-  holes: Array<HoleSchema>;
-}
+type RequestBody = z.infer<typeof requestBodySchema>
 
 function isRequestBody(object: unknown): object is RequestBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "name" in object &&
-    typeof object.name === "string" &&
-    "holes" in object &&
-    object.holes instanceof Array &&
-    object.holes.every((hole) => isHole(hole))
-  );
+  return requestBodySchema.safeParse(object).success
 }
 
 type Params = {
   params: {
     courseId: string,
-
   }
 }
 

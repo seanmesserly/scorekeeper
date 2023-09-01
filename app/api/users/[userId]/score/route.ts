@@ -1,44 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getNumericId, httpError, isValidISOString } from "@lib/util";
+import { getNumericId, httpError } from "@lib/util";
 import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { ScoreCard } from "@lib/types";
+import { z } from "zod";
 
-interface ScoreSchema {
-  number: number;
-  strokes: number;
-}
+const requestBodySchema = z.object({
+  layoutId: z.number(),
+  datetime: z.string().datetime().nonempty(),
+  scores: z.object({
+    number: z.number().min(1),
+    strokes: z.number().min(1)
+  }).array()
+})
 
-function isScore(object: unknown): object is ScoreSchema {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "number" in object &&
-    typeof object.number === "number" &&
-    "strokes" in object &&
-    typeof object.strokes === "number"
-  );
-}
-
-interface RequestBody {
-  layoutId: number;
-  datetime: string;
-  scores: Array<ScoreSchema>;
-}
+type RequestBody = z.infer<typeof requestBodySchema>
 
 function isRequestBody(object: unknown): object is RequestBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "layoutId" in object &&
-    typeof object.layoutId === "number" &&
-    "datetime" in object &&
-    typeof object.datetime === "string" &&
-    isValidISOString(object.datetime) &&
-    "scores" in object &&
-    object.scores instanceof Array &&
-    object.scores.every((score) => isScore(score))
-  );
+  return requestBodySchema.safeParse(object).success
 }
 
 type Params = {

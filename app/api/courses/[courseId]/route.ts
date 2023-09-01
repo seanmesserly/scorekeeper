@@ -4,30 +4,20 @@ import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { Course } from "@lib/types";
+import { z } from "zod";
 
-interface PutBody {
-  name: string;
-  lat: number;
-  lon: number;
-  city: string;
-  state: string;
-}
+const putBodySchema = z.object({
+  name: z.string().nonempty(),
+  lat: z.number().min(-90).max(90),
+  lon: z.number().min(-180).max(180),
+  city: z.string().nonempty(),
+  state: z.string().nonempty()
+})
+
+type PutBody = z.infer<typeof putBodySchema>
 
 function isPutBody(object: unknown): object is PutBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "name" in object &&
-    typeof object.name === "string" &&
-    "lat" in object &&
-    typeof object.lat === "number" &&
-    "lon" in object &&
-    typeof object.lon === "number" &&
-    "city" in object &&
-    typeof object.city === "string" &&
-    "state" in object &&
-    typeof object.state === "string"
-  );
+  return putBodySchema.safeParse(object).success
 }
 
 type Params = {

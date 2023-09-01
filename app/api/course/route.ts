@@ -3,30 +3,20 @@ import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { Course } from "@lib/types";
 import { httpError } from "@lib/util";
+import { z } from "zod";
 
-interface RequestBody {
-  name: string;
-  lat: number;
-  lon: number;
-  city: string;
-  state: string;
-}
+const requestBodySchema = z.object({
+  name: z.string().nonempty(),
+  lat: z.number().min(-90).max(90),
+  lon: z.number().min(-180).max(180),
+  city: z.string().nonempty(),
+  state: z.string().nonempty()
+})
+
+type RequestBody = z.infer<typeof requestBodySchema>
 
 function isRequestBody(object: unknown): object is RequestBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "name" in object &&
-    typeof object.name === "string" &&
-    "lat" in object &&
-    typeof object.lat === "number" &&
-    "lon" in object &&
-    typeof object.lon === "number" &&
-    "city" in object &&
-    typeof object.city === "string" &&
-    "state" in object &&
-    typeof object.state === "string"
-  );
+  return requestBodySchema.safeParse(object).success
 }
 
 type ResponseType = { course: Course } | { error: string }

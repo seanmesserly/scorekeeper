@@ -4,30 +4,20 @@ import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { User } from "@lib/types";
 import { httpError } from "@lib/util";
+import { z } from "zod";
 
-interface RequestBody {
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-  password: string;
-}
+const requestBodySchema = z.object({
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  email: z.string().email().nonempty(),
+  username: z.string().nonempty(),
+  password: z.string().nonempty(),
+})
+
+type RequestBody = z.infer<typeof requestBodySchema>
 
 function isRequestBody(object: unknown): object is RequestBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "firstName" in object &&
-    typeof object.firstName === "string" &&
-    "lastName" in object &&
-    typeof object.lastName === "string" &&
-    "email" in object &&
-    typeof object.email === "string" &&
-    "username" in object &&
-    typeof object.username === "string" &&
-    "password" in object &&
-    typeof object.password === "string"
-  );
+  return requestBodySchema.safeParse(object).success
 }
 
 type ResponseType = { user: User } | { error: string }

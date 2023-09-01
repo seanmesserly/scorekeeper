@@ -1,4 +1,4 @@
-export interface Course {
+export type Course = {
   id: number;
   name: string;
   lat: number;
@@ -7,26 +7,26 @@ export interface Course {
   state: string;
 }
 
-export interface Layout {
+export type Layout = {
   id: number;
   name: string;
   holes: Array<Hole>;
 }
 
-export interface Hole {
+export type Hole = {
   number: number;
   par: number;
   distance: number;
 }
 
-export interface UserAuth {
+export type UserAuth = {
   id: number;
   username: string;
   email: string;
   passwordHash: string;
 }
 
-export interface User {
+export type User = {
   id: number;
   username: string;
   email: string;
@@ -34,12 +34,12 @@ export interface User {
   lastName: string;
 }
 
-export interface Score {
+export type Score = {
   number: number;
   strokes: number;
 }
 
-export interface ScoreCard {
+export type ScoreCard = {
   id: number;
   datetime: string;
   courseID: number;

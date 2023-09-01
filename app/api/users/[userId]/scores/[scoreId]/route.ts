@@ -1,41 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getNumericId, httpError, isValidISOString } from "@lib/util";
+import { getNumericId, httpError } from "@lib/util";
 import * as http from "@lib/http";
 import * as queries from "@lib/queries";
 import { ScoreCard } from "@lib/types";
+import { z } from "zod";
 
-interface ScoreSchema {
-  number: number;
-  strokes: number;
-}
+const putBodySchema = z.object({
+  datetime: z.string().datetime().nonempty(),
+  scores: z.object({
+    number: z.number().min(1),
+    strokes: z.number().min(1)
+  }).array()
+})
 
-function isScore(object: unknown): object is ScoreSchema {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "number" in object &&
-    typeof object.number === "number" &&
-    "strokes" in object &&
-    typeof object.strokes === "number"
-  );
-}
-
-interface PutBody {
-  datetime: string;
-  scores: Array<ScoreSchema>;
-}
+type PutBody = z.infer<typeof putBodySchema>
 
 function isPutBody(object: unknown): object is PutBody {
-  return (
-    typeof object === "object" &&
-    object !== null &&
-    "datetime" in object &&
-    typeof object.datetime === "string" &&
-    isValidISOString(object.datetime) &&
-    "scores" in object &&
-    object.scores instanceof Array &&
-    object.scores.every((score) => isScore(score))
-  );
+  return putBodySchema.safeParse(object).success
 }
 
 type Params = {
