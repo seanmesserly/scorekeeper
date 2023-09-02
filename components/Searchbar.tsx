@@ -69,7 +69,7 @@ const Searchbar = ({ courses }: Props) => {
             ))}
           <div className="border-t border-gray-300 bg-gray-50 text-center p-5 rounded-b-lg">
             Not seeing it here?
-            <Link href="/create" className="ml-1 font-medium text-purple-500 hover:text-purple-700">
+            <Link href="/courses/new" className="ml-1 font-medium text-purple-500 hover:text-purple-700">
               Create a new course!
             </Link>
           </div>
