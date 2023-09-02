@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-    a {
+    a, button {
         @apply focus:outline;
         @apply focus:outline-purple-500;
         @apply focus:outline-1;
