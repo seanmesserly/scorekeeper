@@ -4,8 +4,9 @@ import { cookies } from 'next/headers'
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import * as queries from "@lib/queries"
-import { CookieKeys, User } from "./types";
+import { CookieKeys } from "./types";
 import { z } from 'zod';
+import { redirect } from 'next/navigation';
 
 export type LoginResponse = { error: string } | null
 
@@ -30,14 +31,21 @@ const setAuthCookie = (data: AuthCookie): void => {
 export const getAuthCookie = (): AuthCookie | null => {
   const cookie = cookies().get(CookieKeys.Auth)
   if (!cookie) {
+    console.log("Auth cookie not found")
     return null
   }
 
-  const parsed = authCookieSchema.safeParse(cookie.value)
-  if (!parsed.success) {
+  try {
+    const parsed = authCookieSchema.safeParse(JSON.parse(cookie.value))
+    if (!parsed.success) {
+      console.log("Auth cookie wrong format", cookie)
+      return null
+    }
+    return parsed.data
+  } catch (err) {
+    console.log("Failed to parse json", err)
     return null
   }
-  return parsed.data
 }
 
 export const getUserCookie = (): UserCookie | null => {
@@ -47,12 +55,17 @@ export const getUserCookie = (): UserCookie | null => {
     return null
   }
 
-  const parsed = userCookieSchema.safeParse(JSON.parse(cookie.value))
-  console.log("User cookie wrong format", cookie)
-  if (!parsed.success) {
+  try {
+    const parsed = userCookieSchema.safeParse(JSON.parse(cookie.value))
+    if (!parsed.success) {
+      console.log("User cookie wrong format", cookie)
+      return null
+    }
+    return parsed.data
+  } catch (err) {
+    console.log("Failed to parse json", err)
     return null
   }
-  return parsed.data
 }
 
 const setUserCookie = (data: UserCookie): void => {
@@ -94,31 +107,43 @@ export async function login(data: LoginSchema): Promise<LoginResponse> {
   }
 }
 
-export async function registerUser(firstName: string, lastName: string, email: string, username: string, password: string): Promise<User | null> {
+export const registerSchema = z.object({
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  email: z.string().email().nonempty(),
+  username: z.string().nonempty(),
+  password: z.string().nonempty()
+})
+
+type RegisterSchema = z.infer<typeof registerSchema>
+
+export async function registerUser(data: RegisterSchema): Promise<{ error: string } | null> {
   "use server"
+
+  const { firstName, lastName, email, username, password } = data
 
   // Ensure that username and email are not duplicates
   try {
     if (await queries.userWithUsernameExists(username)) {
       console.log(`User with username ${username} already exists`);
-      return null
+      return { error: "Username taken" }
     }
   } catch (err) {
     console.error(
       `Failed to search for user with username ${username}`,
       err
     );
-    return null
+    return { error: "Failed to determine if username is unique" }
   }
 
   try {
     if (await queries.userWithEmailExists(email)) {
       console.log(`User with email ${email} already exists`);
-      return null
+      return { error: "Email already registered" }
     }
   } catch (err) {
     console.error(`Failed to search for user with email ${email}`, err);
-    return null
+    return { error: "Failed to determine if email is registered" }
   }
 
   // register user
@@ -134,11 +159,27 @@ export async function registerUser(firstName: string, lastName: string, email: s
     );
 
     console.log(`Created user ${username}`);
-    return user
+
+    const jwt = getJWT({ id: user.id, username: user.username })
+
+    setAuthCookie({ userID: user.id, token: jwt })
+    setUserCookie({ userID: user.id })
+    return null
   } catch (err) {
     console.error(`Failed to create user ${username}`, err);
-    return null
+    return { error: "Failed to register user" }
   }
+}
+
+export async function logout() {
+  "use server"
+
+  console.log("Deleting cookies")
+
+  cookies().delete(CookieKeys.Auth)
+  cookies().delete(CookieKeys.User)
+
+  redirect("/login")
 }
 
 export async function hashPassword(password: string): Promise<string> {
