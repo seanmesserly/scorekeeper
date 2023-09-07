@@ -1,6 +1,11 @@
-import CourseCard from "@components/CourseCard";
+"use server"
+
+import { redirect } from 'next/navigation'
 import { getNumericId } from "@lib/util";
+import { RedirectType } from 'next/dist/client/components/redirect';
 import * as queries from "@lib/queries"
+import { getUserCookie } from "@lib/auth"
+import CourseCard from '@components/CourseCard';
 
 type Props = {
   params: {
@@ -9,20 +14,22 @@ type Props = {
 }
 
 export default async function CoursePage({ params }: Props) {
-  console.log(`Loading courses page`)
+  const user = getUserCookie()
+  if (!user) {
+    console.log("User not logged in")
+    redirect("/login", RedirectType.push)
+  }
+
   const courseIdQuery = params.courseId;
   const courseId = getNumericId(courseIdQuery)
   if (!courseId) {
-    // TODO redirect or something
-    return "Bad ID"
+    console.log("Bad course ID")
+    redirect("/", RedirectType.replace)
   }
-
-  // TODO: Get real ID when login is added
-  const userId = 1;
 
   const course = await queries.getCourseByID(courseId)
   const layouts = await queries.getLayouts(courseId)
-  const scores = await queries.getScoreCards(userId)
+  const scores = await queries.getScoreCards(user.userID)
 
   return (
     course && (

@@ -57,3 +57,8 @@ export type ScoreCard = {
   layoutID: number;
   scores: Array<Score>;
 };
+
+export const CookieKeys = {
+  Auth: "auth",
+  User: "user"
+} as const
