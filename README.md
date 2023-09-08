@@ -27,8 +27,3 @@ npm run seed
 npm run dev
 ```
 
-## Generate API docs
-
-```bash
-npx redoc-cli bundle -o openapi.html openapi.yaml
-```
